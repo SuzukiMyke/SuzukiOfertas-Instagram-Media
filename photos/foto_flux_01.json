@@ -1,0 +1,16 @@
+{
+  "arquivo": "photos/foto_flux_01.jpg",
+  "origem": "Gerada por IA (Cloudflare Workers AI)",
+  "gerada_por_ia": true,
+  "modelo": "@cf/black-forest-labs/flux-1-schnell",
+  "prompt": "Photorealistic premium editorial photograph of a modern cozy Brazilian home, wooden desk with open laptop, shopping delivery boxes and neatly arranged household items, warm natural daylight, sophisticated commercial photography, realistic objects and proportions, no people, no visible brands, no logos, no writing, no watermarks, clean composition.",
+  "steps": 4,
+  "data_utc": "2026-11-16T19:01:53Z",
+  "resolucao": "1024x1024",
+  "formato_original": "JPEG",
+  "consumo_neuronios": 172.8,
+  "fonte_consumo": "cabecalho Cf-Ai-Neurons e result.usage.neurons da resposta da API",
+  "cf_ai_req_id": "29532b39-0e92-455c-bc4f-56f4bc2affb0",
+  "geracoes_realizadas": 1,
+  "licenca": "Imagem gerada por IA para uso da marca Suzuki Ofertas; sem pessoas, marcas ou textos solicitados no prompt."
+}
