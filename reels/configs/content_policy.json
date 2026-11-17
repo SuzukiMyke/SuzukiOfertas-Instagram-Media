@@ -1,0 +1,14 @@
+{
+  "_comment": "Política de conteúdo carregada por rules.py. Termos proibidos são comparados sem acento e sem diferenciar maiúsculas. Para ampliar a lista num reel específico, use policy.extra_forbidden_terms na config.",
+  "forbidden_terms": [
+    "menor preço", "menor preco do brasil", "imperdível", "últimas unidades", "garantido", "garantia de menor",
+    "só hoje", "corre que acaba", "melhor preço", "preço mais baixo", "100% original", "frete grátis garantido",
+    "estoque limitado", "esgotando"
+  ],
+  "commercial_fields_requiring_verification": ["price", "discount", "stock", "rating"],
+  "allowed_source_kinds": ["real_photo", "illustrative", "synthetic_demo"],
+  "official_channels": {
+    "whatsapp": "https://whatsapp.com/channel/0029VbDjv2YBVJlDNfHVeM0F",
+    "telegram": "https://t.me/suzukiofertas"
+  }
+}

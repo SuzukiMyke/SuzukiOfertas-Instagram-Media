@@ -1,0 +1,74 @@
+{
+  "_comment": "MODELO COMENTADO. Chaves iniciadas por '_' são comentários e são ignoradas; qualquer outra chave desconhecida é ERRO. Campos omitidos herdam de configs/defaults.json. Caminhos são relativos à raiz do repositório. Esquema completo: reels/schema/reel.schema.md.",
+  "schema_version": 1,
+  "id": "example_template",
+  "output": {
+    "_comment": "1080x1920 a 30 fps é o formato de Reels. crf menor = mais qualidade/arquivo maior. threads limita CPU. supersample (1–3) é a ampliação do fundo para o zoom suave.",
+    "width": 1080, "height": 1920, "fps": 30, "crf": 21, "preset": "veryfast", "threads": 2, "filename": "example_template.mp4"
+  },
+  "theme": {
+    "_comment": "Paleta APROXIMADA da marca (não é especificação oficial). font aceita caminho de arquivo ou 'auto:titulo' / 'auto:texto' / 'auto:rotulo' (lista do gerador híbrido).",
+    "palette": {"bg": "#012D6B", "primary": "#034EE7", "accent": "#FEC618", "alert": "#F60213", "text": "#FFFFFF", "text_dark": "#012D6B"},
+    "font": {"bold": "auto:titulo", "regular": "auto:texto", "label": "auto:rotulo"},
+    "sizes": {"hook": 96, "title": 78, "subtitle": 46}
+  },
+  "safe_zone": {"_comment": "Margens seguras em px (topo, base, laterais e coluna de ícones à direita).", "top": 270, "bottom": 380, "left": 64, "right": 120},
+  "demo_label": {"enabled": true, "text": "DEMONSTRAÇÃO TÉCNICA — NÃO É PRODUTO À VENDA"},
+  "animation": {"_comment": "Tempos das animações de texto (s) e escurecimento do fundo do gancho (0–0,9).", "fade_in": 0.4, "stagger": 0.22, "hook_dim": 0.4},
+  "hook": {
+    "_comment": "Gancho: no máximo 3 s e 1–2 linhas. background = 'scene:N' (fundo da cena N) ou 'brand'. animation: slide_up | slide_left | fade | none.",
+    "duration": 2.8, "lines": ["Categorias da semana", "em 15 segundos"], "background": "scene:0", "animation": "fade",
+    "transition_out": {"type": "circleopen", "duration": 0.5}
+  },
+  "scenes": [
+    {
+      "_comment": "source.kind: real_photo | illustrative | synthetic_demo. Tipos não reais exibem rótulo na tela. price/discount/stock/rating só com verified_at + source_url e foto real.",
+      "id": "e1",
+      "category": "Esporte e lazer",
+      "duration": 4.4,
+      "source": {"path": "reels/assets/synthetic/s4_esporte.jpg", "kind": "synthetic_demo", "origin": "gerado por reel_gen/synth.py (padrão waves, seed 404)", "license": "material próprio do projeto (sintético, sem terceiros)"},
+      "title": "Esporte e lazer",
+      "subtitle": "Seleção para quem gosta de movimento",
+      "highlights": [{"text": "Para treinar", "at": 0.9, "style": "pill"}, {"text": "Para passear", "at": 1.5, "style": "pill"}],
+      "camera": {"_comment": "zoom 1.0–3.0; pan = centro da janela (0–1); easing: linear | ease_in | ease_out | ease_in_out", "zoom_start": 1.0, "zoom_end": 1.12, "pan_start": [0.5, 0.6], "pan_end": [0.5, 0.4], "easing": "ease_out"},
+      "text_animation": "slide_left",
+      "transition_out": {"_comment": "type: fade, dissolve, slideleft/right/up/down, wipeleft/right/up/down, circleopen/close, smoothleft/up", "type": "slideup", "duration": 0.45}
+    },
+    {
+      "id": "e2",
+      "category": "Beleza e cuidados",
+      "duration": 4.4,
+      "source": {"path": "reels/assets/synthetic/s5_beleza.jpg", "kind": "synthetic_demo", "origin": "gerado por reel_gen/synth.py (padrão rings, seed 505)", "license": "material próprio do projeto (sintético, sem terceiros)"},
+      "title": "Beleza e cuidados",
+      "subtitle": "Rotina de autocuidado",
+      "highlights": [{"text": "Seleção da semana", "at": 1.0, "style": "tag"}],
+      "camera": {"zoom_start": 1.15, "zoom_end": 1.02, "pan_start": [0.5, 0.45], "pan_end": [0.5, 0.5], "easing": "ease_in_out"},
+      "text_animation": "slide_up",
+      "transition_out": {"type": "dissolve", "duration": 0.4}
+    },
+    {
+      "id": "e3",
+      "category": "Ferramentas e jardim",
+      "duration": 4.4,
+      "source": {"path": "reels/assets/synthetic/s6_ferramentas.jpg", "kind": "synthetic_demo", "origin": "gerado por reel_gen/synth.py (padrão dots, seed 606)", "license": "material próprio do projeto (sintético, sem terceiros)"},
+      "title": "Ferramentas e jardim",
+      "subtitle": "Para projetos em casa",
+      "camera": {"zoom_start": 1.0, "zoom_end": 1.1, "pan_start": [0.4, 0.5], "pan_end": [0.6, 0.5], "easing": "linear"},
+      "text_animation": "fade",
+      "transition_out": {"type": "smoothleft", "duration": 0.5}
+    }
+  ],
+  "cta": {
+    "_comment": "CTA independente (fundo próprio da marca). buttons referenciam chaves ou rótulos de 'channels'. disclosure é obrigatório.",
+    "duration": 4.0, "headline": "Siga os canais e acompanhe", "buttons": ["Telegram", "WhatsApp"],
+    "links_display": "channels_official", "show_logo": true, "disclosure": "Publicidade. Preços e condições podem mudar.", "independent_background": true
+  },
+  "channels": {
+    "_comment": "Somente canais oficiais registrados em configs/content_policy.json; URL diferente é ERRO.",
+    "whatsapp": {"label": "WhatsApp", "url": "https://whatsapp.com/channel/0029VbDjv2YBVJlDNfHVeM0F", "display": "Canal Suzuki Ofertas"},
+    "telegram": {"label": "Telegram", "url": "https://t.me/suzukiofertas", "display": "t.me/suzukiofertas"}
+  },
+  "logo": {"_comment": "Logo oficial: proporção preservada, sem recolorir. mask: rounded | ellipse | none.", "path": "brand/logo-suzuki-ofertas.png", "position": "top_right", "size_px": 140, "cta_size_px": 240, "opacity": 0.95, "show_on_scenes": true, "mask": "rounded"},
+  "audio": {"_comment": "Piloto: silent. Modo licensed exige faixas em reels/assets/audio_licensed/ com licença documentada (ver schema).", "mode": "silent", "tracks": []},
+  "policy": {"extra_forbidden_terms": ["oferta relâmpago"]}
+}

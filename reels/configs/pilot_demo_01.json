@@ -1,0 +1,64 @@
+{
+  "_comment": "Piloto técnico v1: 3 categorias, silencioso, materiais sintéticos rotulados. Sem preço, desconto, estoque, avaliação ou característica de produto.",
+  "schema_version": 1,
+  "id": "pilot_demo_01",
+  "output": {"width": 1080, "height": 1920, "fps": 30, "crf": 20, "preset": "veryfast", "threads": 2, "filename": "pilot_demo_01.mp4"},
+  "theme": {
+    "palette": {"bg": "#012D6B", "primary": "#034EE7", "accent": "#FEC618", "alert": "#F60213", "text": "#FFFFFF", "text_dark": "#012D6B"},
+    "font": {
+      "bold": "/usr/share/fonts/opentype/inter/InterDisplay-ExtraBold.otf",
+      "regular": "/usr/share/fonts/opentype/inter/Inter-Medium.otf",
+      "label": "/usr/share/fonts/opentype/inter/Inter-Bold.otf"
+    }
+  },
+  "safe_zone": {"top": 270, "bottom": 380, "left": 64, "right": 120},
+  "demo_label": {"enabled": true, "text": "DEMONSTRAÇÃO TÉCNICA — NÃO É PRODUTO À VENDA"},
+  "hook": {"duration": 2.5, "lines": ["Achados por categoria", "veja como funciona"], "background": "scene:0", "animation": "slide_up",
+           "transition_out": {"type": "fade", "duration": 0.4}},
+  "scenes": [
+    {
+      "id": "s1",
+      "category": "Tecnologia",
+      "duration": 4.6,
+      "source": {"path": "reels/assets/synthetic/s1_tecnologia.jpg", "kind": "synthetic_demo", "origin": "gerado por reel_gen/synth.py (padrão circuit, seed 101)", "license": "material próprio do projeto (sintético, sem terceiros)"},
+      "title": "Achados de tecnologia",
+      "subtitle": "Seleção da categoria publicada nos canais",
+      "highlights": [{"text": "Categoria em destaque", "at": 1.0, "style": "pill"}],
+      "camera": {"zoom_start": 1.00, "zoom_end": 1.15, "pan_start": [0.5, 0.5], "pan_end": [0.42, 0.46], "easing": "ease_in_out"},
+      "text_animation": "slide_up",
+      "transition_out": {"type": "slideleft", "duration": 0.4}
+    },
+    {
+      "id": "s2",
+      "category": "Casa e cozinha",
+      "duration": 4.6,
+      "source": {"path": "reels/assets/synthetic/s2_casa_cozinha.jpg", "kind": "synthetic_demo", "origin": "gerado por reel_gen/synth.py (padrão blobs, seed 202)", "license": "material próprio do projeto (sintético, sem terceiros)"},
+      "title": "Para casa e cozinha",
+      "subtitle": "Utilidades para o dia a dia",
+      "highlights": [{"text": "Confira nos canais", "at": 1.2, "style": "pill"}],
+      "camera": {"zoom_start": 1.12, "zoom_end": 1.00, "pan_start": [0.58, 0.40], "pan_end": [0.5, 0.5], "easing": "ease_in_out"},
+      "text_animation": "slide_up",
+      "transition_out": {"type": "wipeleft", "duration": 0.4}
+    },
+    {
+      "id": "s3",
+      "category": "Moda e acessórios",
+      "duration": 4.6,
+      "source": {"path": "reels/assets/synthetic/s3_moda.jpg", "kind": "synthetic_demo", "origin": "gerado por reel_gen/synth.py (padrão bands, seed 303)", "license": "material próprio do projeto (sintético, sem terceiros)"},
+      "title": "Moda e acessórios",
+      "subtitle": "Novidades da categoria nos canais",
+      "highlights": [{"text": "Nova seleção", "at": 1.0, "style": "pill"}],
+      "camera": {"zoom_start": 1.04, "zoom_end": 1.18, "pan_start": [0.45, 0.55], "pan_end": [0.55, 0.45], "easing": "ease_in_out"},
+      "text_animation": "slide_up",
+      "transition_out": {"type": "fade", "duration": 0.4}
+    }
+  ],
+  "cta": {"duration": 3.6, "headline": "Mais ofertas nos nossos canais", "buttons": ["WhatsApp", "Telegram"],
+          "links_display": "channels_official", "show_logo": true, "disclosure": "Publicidade. Preços e condições podem mudar.", "independent_background": true},
+  "channels": {
+    "whatsapp": {"label": "WhatsApp", "url": "https://whatsapp.com/channel/0029VbDjv2YBVJlDNfHVeM0F", "display": "Canal Suzuki Ofertas"},
+    "telegram": {"label": "Telegram", "url": "https://t.me/suzukiofertas", "display": "t.me/suzukiofertas"}
+  },
+  "logo": {"path": "brand/logo-suzuki-ofertas.png", "position": "top_left", "size_px": 150, "cta_size_px": 250, "opacity": 0.95, "show_on_scenes": true},
+  "audio": {"mode": "silent", "tracks": []}
+}

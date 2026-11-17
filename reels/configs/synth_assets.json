@@ -1,0 +1,11 @@
+{
+  "_comment": "Fundos sintéticos de demonstração gerados por reel_gen/synth.py (python3 -m reel_gen synth). Somente degradês e formas geométricas neutras: não representam produtos, marcas ou pessoas. Determinísticos (seed fixa).",
+  "images": [
+    {"path": "reels/assets/synthetic/s1_tecnologia.jpg",  "size": [1440, 2560], "colors": ["#0A1B3F", "#1D5FD1", "#3FD0FF", "#FFFFFF"], "pattern": "circuit", "angle": 70,  "seed": 101},
+    {"path": "reels/assets/synthetic/s2_casa_cozinha.jpg", "size": [1440, 2560], "colors": ["#3B1F12", "#C9733A", "#F4C98E", "#FFF4E2"], "pattern": "blobs",   "angle": 100, "seed": 202},
+    {"path": "reels/assets/synthetic/s3_moda.jpg",         "size": [1440, 2560], "colors": ["#2A0F3D", "#9B2C8F", "#F07AB8", "#FFE3F1"], "pattern": "bands",   "angle": 120, "seed": 303},
+    {"path": "reels/assets/synthetic/s4_esporte.jpg",      "size": [1440, 2560], "colors": ["#06302A", "#0E8F6E", "#7BF0C0", "#E9FFF7"], "pattern": "waves",   "angle": 80,  "seed": 404},
+    {"path": "reels/assets/synthetic/s5_beleza.jpg",       "size": [1440, 2560], "colors": ["#3A1424", "#D2667E", "#FFC2CF", "#FFF0F3"], "pattern": "rings",   "angle": 95,  "seed": 505},
+    {"path": "reels/assets/synthetic/s6_ferramentas.jpg",  "size": [1440, 2560], "colors": ["#22252B", "#E08A1E", "#FFD27A", "#F4F4F4"], "pattern": "dots",    "angle": 60,  "seed": 606}
+  ]
+}

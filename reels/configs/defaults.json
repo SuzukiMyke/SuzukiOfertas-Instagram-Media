@@ -1,0 +1,23 @@
+{
+  "_comment": "Valores padrão aplicados sob cada config de reel (a config do reel sempre prevalece). Nenhum destes valores é fixo no código.",
+  "output": {"width": 1080, "height": 1920, "fps": 30, "crf": 20, "intermediate_crf": 12, "preset": "veryfast", "threads": 2, "max_bitrate_mbps": 10, "supersample": 2},
+  "theme": {
+    "palette": {"bg": "#012D6B", "primary": "#034EE7", "accent": "#FEC618", "alert": "#F60213", "text": "#FFFFFF", "text_dark": "#012D6B"},
+    "font": {"bold": "auto:titulo", "regular": "auto:texto", "label": "auto:rotulo"},
+    "sizes": {"hook": 100, "title": 80, "subtitle": 48, "highlight": 48, "category": 44, "label": 44, "cta_headline": 84, "button": 52, "button_sub": 44, "disclosure": 44},
+    "panel": {"color": "bg", "opacity": 0.86, "radius": 28, "padding": [28, 22]}
+  },
+  "safe_zone": {"top": 270, "bottom": 380, "left": 64, "right": 120},
+  "demo_label": {"enabled": false, "text": "DEMONSTRAÇÃO TÉCNICA — NÃO É PRODUTO À VENDA"},
+  "illustrative_label": "Imagem ilustrativa",
+  "animation": {"fade_in": 0.35, "fade_out": 0.3, "slide_px": 48, "stagger": 0.18, "text_delay": 0.15, "hook_dim": 0.35},
+  "logo": {"position": "top_left", "size_px": 150, "cta_size_px": 380, "opacity": 0.95, "show_on_scenes": true, "mask": "rounded"},
+  "audio": {"mode": "silent", "tracks": [], "silent_track": false, "loudnorm": {"I": -14, "TP": -1.5, "LRA": 11}, "ducking": false},
+  "validation": {
+    "duration_min": 15, "duration_max": 20, "duration_tolerance": 0.1, "duration_hard_max": 90,
+    "max_bitrate_mbps": 12, "max_size_mb": 100,
+    "hook_max": 3.0, "cta_min": 2.5,
+    "min_body_px": 44, "min_title_px": 72, "min_contrast": 4.5,
+    "min_frame_stddev": 6.0, "motion_spike_ratio": 3.0, "logo_max_mad": 14.0
+  }
+}
