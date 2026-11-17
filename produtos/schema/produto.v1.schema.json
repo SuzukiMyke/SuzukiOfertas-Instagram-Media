@@ -1,0 +1,459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:suzukiofertas:instagram:produto:v1",
+  "title": "Produto exportado pelo agente de ofertas (contrato v1, 1.0.0-proposta)",
+  "description": "Um arquivo por produto. Lista de permissão estrita (additionalProperties=false). Regras que um JSON Schema não expressa (parâmetros de URL, datas futuras, ordem de datas, valores com aparência de segredo) são aplicadas por produtos/esquema.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "exportId",
+    "exportedAt",
+    "source",
+    "product",
+    "price",
+    "availability",
+    "publication",
+    "eligibility"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^1\\.\\d{1,5}\\.\\d{1,5}$",
+      "description": "major 1; outras majors vão para quarentena no leitor"
+    },
+    "exportId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "exportedAt": {
+      "$ref": "#/$defs/iso"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "system"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "agente_publicada",
+            "catalogo_candidato",
+            "api_candidato"
+          ]
+        },
+        "system": {
+          "const": "SuzukiOfertas-AgenteAutomatico"
+        }
+      }
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "provider",
+        "store",
+        "title",
+        "officialUrl"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._\\-]{0,63}$"
+        },
+        "provider": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{1,40}$"
+        },
+        "store": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1
+        },
+        "advertiserId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 240,
+          "minLength": 1
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "categoryOrigin": {
+          "enum": [
+            "fonte",
+            "derivada_revisada",
+            null
+          ]
+        },
+        "officialUrl": {
+          "$ref": "#/$defs/url"
+        },
+        "affiliateUrl": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/url"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amountCents",
+        "currency",
+        "verification"
+      ],
+      "properties": {
+        "amountCents": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000000
+        },
+        "currency": {
+          "const": "BRL"
+        },
+        "originalAmountCents": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 1000000000
+        },
+        "verifiedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/iso"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validUntil": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/iso"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification": {
+          "enum": [
+            "ao_vivo",
+            "catalogo_sem_verificacao",
+            "desconhecida"
+          ]
+        }
+      }
+    },
+    "availability": {
+      "enum": [
+        "in_stock",
+        "unknown",
+        "out_of_stock"
+      ]
+    },
+    "photo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "usePermission"
+      ],
+      "properties": {
+        "url": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/url"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin": {
+          "enum": [
+            "api_oficial",
+            "pagina_oficial",
+            "catalogo_afiliado",
+            "desconhecida"
+          ]
+        },
+        "usePermission": {
+          "enum": [
+            "confirmada",
+            "pendente",
+            "negada"
+          ]
+        },
+        "permissionRef": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 300
+        },
+        "checkedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/iso"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "verifiedFacts": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text",
+          "sourceRef",
+          "verifiedAt"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1
+          },
+          "sourceRef": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1
+          },
+          "verifiedAt": {
+            "$ref": "#/$defs/iso"
+          }
+        }
+      }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "publicada",
+            "nao_publicada",
+            "incerta",
+            "bloqueada"
+          ]
+        },
+        "publishedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/iso"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "channel": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 80
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "url"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "url": {
+            "$ref": "#/$defs/url"
+          }
+        }
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agentPublicationEligible"
+      ],
+      "properties": {
+        "agentPublicationEligible": {
+          "type": "boolean"
+        },
+        "blockReason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "properties": {
+              "kind": {
+                "const": "agente_publicada"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "photo"
+        ],
+        "properties": {
+          "product": {
+            "properties": {
+              "affiliateUrl": {
+                "$ref": "#/$defs/url"
+              }
+            },
+            "required": [
+              "affiliateUrl"
+            ]
+          },
+          "price": {
+            "properties": {
+              "verifiedAt": {
+                "$ref": "#/$defs/iso"
+              },
+              "validUntil": {
+                "$ref": "#/$defs/iso"
+              },
+              "verification": {
+                "const": "ao_vivo"
+              }
+            },
+            "required": [
+              "verifiedAt",
+              "validUntil"
+            ]
+          },
+          "publication": {
+            "properties": {
+              "state": {
+                "const": "publicada"
+              },
+              "publishedAt": {
+                "$ref": "#/$defs/iso"
+              }
+            },
+            "required": [
+              "publishedAt"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "catalogo_candidato",
+                  "api_candidato"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "product": {
+            "properties": {
+              "affiliateUrl": {
+                "type": "null"
+              }
+            }
+          },
+          "price": {
+            "properties": {
+              "verification": {
+                "not": {
+                  "const": "ao_vivo"
+                }
+              }
+            }
+          },
+          "publication": {
+            "properties": {
+              "state": {
+                "const": "nao_publicada"
+              },
+              "publishedAt": {
+                "type": "null"
+              }
+            }
+          },
+          "eligibility": {
+            "properties": {
+              "agentPublicationEligible": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "iso": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?(Z|\\+00:00)$"
+    },
+    "url": {
+      "type": "string",
+      "maxLength": 2048,
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]://[^\\s/@:?#\\\\]+(/[^\\s\\\\]*)?$"
+    }
+  }
+}
