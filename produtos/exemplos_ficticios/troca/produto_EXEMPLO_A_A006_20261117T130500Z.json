@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0.0",
+  "exportId": "00000000-0000-4000-8000-000000000009",
+  "exportedAt": "2026-11-17T13:05:00Z",
+  "source": {
+    "kind": "agente_publicada",
+    "system": "SuzukiOfertas-AgenteAutomatico"
+  },
+  "product": {
+    "id": "A006",
+    "provider": "EXEMPLO_A",
+    "store": "Loja Fictícia",
+    "advertiserId": "99999",
+    "title": "Produto Fictício A006",
+    "category": "Casa e Cozinha > Utensílios",
+    "categoryOrigin": "fonte",
+    "officialUrl": "https://www.lojaficticia.example/produto/a006",
+    "affiliateUrl": "https://afiliado.lojaficticia.example/ir/a006"
+  },
+  "price": {
+    "amountCents": 12990,
+    "currency": "BRL",
+    "originalAmountCents": null,
+    "verifiedAt": "2026-11-17T13

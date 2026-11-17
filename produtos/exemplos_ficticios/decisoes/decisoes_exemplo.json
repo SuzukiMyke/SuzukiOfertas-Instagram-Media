@@ -1,0 +1,23 @@
+{
+  "decisoesVersion": "1.0",
+  "decisoes": [
+    {
+      "provider": "EXEMPLO_A",
+      "productId": "A001",
+      "exportId": "00000000-0000-4000-8000-000000000001",
+      "decisao": "aprovado_para_rascunho",
+      "autor": "Revisor Exemplo",
+      "data": "2026-11-17T14:00:00Z",
+      "motivo": "Dados e foto conferidos (exemplo fictício)."
+    },
+    {
+      "provider": "EXEMPLO_A",
+      "productId": "A004",
+      "exportId": "00000000-0000-4000-8000-000000000006",
+      "decisao": "aprovado_para_rascunho",
+      "autor": "Revisor Exemplo",
+      "data": "2026-11-17T12:30:00Z",
+      "motivo": "Aprovação da v1 (preço antigo); será invalidada pela v2."
+    }
+  ]
+}

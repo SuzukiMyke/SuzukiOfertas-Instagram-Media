@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0.0",
+  "exportId": "00000000-0000-4000-8000-000000000005",
+  "exportedAt": "2026-11-17T12:00:00Z",
+  "source": {
+    "kind": "catalogo_candidato",
+    "system": "SuzukiOfertas-AgenteAutomatico"
+  },
+  "product": {
+    "id": "B002",
+    "provider": "EXEMPLO_B",
+    "store": "Loja Fictícia",
+    "advertiserId": "99999",
+    "title": "Produto Fictício B002",
+    "category": null,
+    "categoryOrigin": null,
+    "officialUrl": "https://www.lojaficticia.example/produto/b002",
+    "affiliateUrl": null
+  },
+  "price": {
+    "amountCents": 2990,
+    "currency": "BRL",
+    "originalAmountCents": null,
+    "verifiedAt": null,
+    "validUntil": null,
+    "verification": "catalogo_sem_verificacao"
+  },
+  "availability": "in_stock",
+  "verifiedFacts": [],
+  "publication": {
+    "state": "nao_publicada",
+    "publishedAt": null,
+    "channel": null
+  },
+  "references": [
+    {
+      "label": "Página oficial fictícia",
+      "url": "https://www.lojaficticia.example/produto/b002"
+    }
+  ],
+  "eligibility": {
+    "agentPublicationEligible": false,
+    "blockReason": "catalogo_sem_verificacao_ao_vivo"
+  }
+}

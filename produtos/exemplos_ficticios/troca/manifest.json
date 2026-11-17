@@ -1,0 +1,72 @@
+{
+  "manifestVersion": "1.0",
+  "generatedAt": "2026-11-17T14:30:00Z",
+  "count": 13,
+  "files": [
+    {
+      "name": "produto_EXEMPLO_A_A001_20261117T130500Z.json",
+      "sha256": "f9a64551842b79c395a08c3406b456d8c1a1f21a7c140a0f35cb94fa9bc9b3a7",
+      "bytes": 1461
+    },
+    {
+      "name": "produto_EXEMPLO_A_A002_20261117T060500Z.json",
+      "sha256": "f230181640a1393b339d20976fb53cc83eb96007f4754be867dcd23fe77b0385",
+      "bytes": 1461
+    },
+    {
+      "name": "produto_EXEMPLO_A_A003_20261117T130500Z.json",
+      "sha256": "b7fa4adf58df6f7178dc819f7591a3da685089ad8078385e87f9f97b5b806b80",
+      "bytes": 1370
+    },
+    {
+      "name": "produto_EXEMPLO_A_A004_20261117T120000Z.json",
+      "sha256": "184b38368a9b327c94be2995cfeea25727f189e8ed672a9e36d45269d564a1f7",
+      "bytes": 1460
+    },
+    {
+      "name": "produto_EXEMPLO_A_A004_20261117T140000Z.json",
+      "sha256": "89ac5125e386fff5b266e5d8a739037a7927b70c9c63b1a325d7d81cad8c82cf",
+      "bytes": 1460
+    },
+    {
+      "name": "produto_EXEMPLO_A_A005_20261117T130500Z.json",
+      "sha256": "a64e322dcdcd1947205c9e2474809da0288bfe5cb0293229d775602c42d148a3",
+      "bytes": 1494
+    },
+    {
+      "name": "produto_EXEMPLO_A_A006_20261117T130500Z.json",
+      "sha256": "8b84b7beefc49acc20e09878b73c1659d197c5e1187b29a64ca7d9044e857c39",
+      "bytes": 730
+    },
+    {
+      "name": "produto_EXEMPLO_A_A008_20261117T130500Z.json",
+      "sha256": "1b3ad5a0ca458dad084f57dc8d2a6c4df552ea6c85abce5bfe5cfb7d4657fbbd",
+      "bytes": 1461
+    },
+    {
+      "name": "produto_EXEMPLO_A_A009_20261117T130500Z.json",
+      "sha256": "0336c016886590bf3e16970fe51b88ef336af19e57659c587a4f3956519253da",
+      "bytes": 1482
+    },
+    {
+      "name": "produto_EXEMPLO_A_A010_20261117T130500Z.json",
+      "sha256": "a6f0a13366c9bd6bcce9c1c8b641c6491fbeb580a6ec5c3d0fa67fc6d0d63681",
+      "bytes": 1465
+    },
+    {
+      "name": "produto_EXEMPLO_B_B001_20261117T120000Z.json",
+      "sha256": "77fc12c8c2b02b2515666ba69cb98e7e1438756b572fff24fd6af6f1ecb7f0e1",
+      "bytes": 1166
+    },
+    {
+      "name": "produto_EXEMPLO_B_B002_20261117T120000Z.json",
+      "sha256": "1fa3b243bb4a92e6b0880b0b811b49820603d856207124b242bd419ded9a34d3",
+      "bytes": 1137
+    },
+    {
+      "name": "produto_EXEMPLO_B_B003_20261117T120000Z.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 1313
+    }
+  ]
+}

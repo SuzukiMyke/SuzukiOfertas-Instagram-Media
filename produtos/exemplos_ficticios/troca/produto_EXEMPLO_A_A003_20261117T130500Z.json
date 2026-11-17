@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0.0",
+  "exportId": "00000000-0000-4000-8000-000000000003",
+  "exportedAt": "2026-11-17T13:05:00Z",
+  "source": {
+    "kind": "agente_publicada",
+    "system": "SuzukiOfertas-AgenteAutomatico"
+  },
+  "product": {
+    "id": "A003",
+    "provider": "EXEMPLO_A",
+    "store": "Loja Fictícia",
+    "advertiserId": "99999",
+    "title": "Produto Fictício A003",
+    "category": "Casa e Cozinha > Utensílios",
+    "categoryOrigin": "fonte",
+    "officialUrl": "https://www.lojaficticia.example/produto/a003",
+    "affiliateUrl": "https://afiliado.lojaficticia.example/ir/a003"
+  },
+  "price": {
+    "amountCents": 12990,
+    "currency": "BRL",
+    "originalAmountCents": null,
+    "verifiedAt": "2026-11-17T13:00:00Z",
+    "validUntil": "2026-11-17T19:00:00Z",
+    "verification": "ao_vivo"
+  },
+  "availability": "in_stock",
+  "photo": {
+    "url": null,
+    "origin": "desconhecida",
+    "usePermission": "pendente",
+    "permissionRef": null,
+    "checkedAt": null
+  },
+  "verifiedFacts": [],
+  "publication": {
+    "state": "publicada",
+    "publishedAt": "2026-11-17T13:05:00Z",
+    "channel": "Canal Fictício"
+  },
+  "references": [
+    {
+      "label": "Página oficial fictícia",
+      "url": "https://www.lojaficticia.example/produto/a003"
+    }
+  ],
+  "eligibility": {
+    "agentPublicationEligible": true,
+    "blockReason": null
+  }
+}
