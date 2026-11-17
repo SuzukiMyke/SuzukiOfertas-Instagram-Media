@@ -1,0 +1,450 @@
+{
+  "id": "example_template",
+  "config": "reels/configs/example_template.json",
+  "tools": {
+    "python": "3.13.18",
+    "pillow": "12.3.0",
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "ffprobe": "ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers",
+    "libx264": true,
+    "aac": true,
+    "platform": "Linux-6.18.44-fc-v553-x86_64-with-glibc2.39"
+  },
+  "timeline": {
+    "fps": 30,
+    "total_s": 18.1333,
+    "segments": [
+      {
+        "kind": "hook",
+        "key": "hook",
+        "start_s": 0.0,
+        "end_s": 2.8,
+        "duration_s": 2.8,
+        "frames": 84,
+        "transition_in": null,
+        "transition_out": {
+          "type": "circleopen",
+          "duration": 0.5
+        }
+      },
+      {
+        "kind": "scene",
+        "key": "e1",
+        "start_s": 2.3,
+        "end_s": 6.7,
+        "duration_s": 4.4,
+        "frames": 132,
+        "transition_in": {
+          "type": "circleopen",
+          "duration": 0.5
+        },
+        "transition_out": {
+          "type": "slideup",
+          "duration": 0.4666666666666667
+        }
+      },
+      {
+        "kind": "scene",
+        "key": "e2",
+        "start_s": 6.2333,
+        "end_s": 10.6333,
+        "duration_s": 4.4,
+        "frames": 132,
+        "transition_in": {
+          "type": "slideup",
+          "duration": 0.4666666666666667
+        },
+        "transition_out": {
+          "type": "dissolve",
+          "duration": 0.4
+        }
+      },
+      {
+        "kind": "scene",
+        "key": "e3",
+        "start_s": 10.2333,
+        "end_s": 14.6333,
+        "duration_s": 4.4,
+        "frames": 132,
+        "transition_in": {
+          "type": "dissolve",
+          "duration": 0.4
+        },
+        "transition_out": {
+          "type": "smoothleft",
+          "duration": 0.5
+        }
+      },
+      {
+        "kind": "cta",
+        "key": "cta",
+        "start_s": 14.1333,
+        "end_s": 18.1333,
+        "duration_s": 4.0,
+        "frames": 120,
+        "transition_in": {
+          "type": "smoothleft",
+          "duration": 0.5
+        },
+        "transition_out": null
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [],
+  "checks": [
+    {
+      "check": "gancho ≤ 3.0 s",
+      "blocking": true,
+      "ok": true,
+      "detail": "2.80 s"
+    },
+    {
+      "check": "CTA presente e ≥ 2.5 s",
+      "blocking": true,
+      "ok": true,
+      "detail": "4.00 s"
+    },
+    {
+      "check": "camadas dentro da margem segura, fontes mínimas, contraste e logo",
+      "ok": true,
+      "detail": "28 camadas verificadas por geometria",
+      "blocking": true
+    },
+    {
+      "check": "contraste mínimo ≥ 4.5",
+      "blocking": true,
+      "ok": true,
+      "detail": "pior caso 6.47:1"
+    },
+    {
+      "check": "regras de conteúdo (seção 4)",
+      "blocking": true,
+      "ok": true,
+      "detail": "0 erro(s)"
+    },
+    {
+      "check": "contêiner MP4",
+      "ok": true,
+      "detail": "mov,mp4,m4a,3gp,3g2,mj2",
+      "blocking": true
+    },
+    {
+      "check": "um fluxo de vídeo",
+      "ok": true,
+      "detail": "1 fluxo(s)",
+      "blocking": true
+    },
+    {
+      "check": "codec h264",
+      "ok": true,
+      "detail": "h264",
+      "blocking": true
+    },
+    {
+      "check": "pix_fmt yuv420p",
+      "ok": true,
+      "detail": "yuv420p",
+      "blocking": true
+    },
+    {
+      "check": "perfil High/Main",
+      "ok": true,
+      "detail": "High",
+      "blocking": true
+    },
+    {
+      "check": "resolução 1080x1920",
+      "ok": true,
+      "detail": "1080x1920",
+      "blocking": true
+    },
+    {
+      "check": "razão 9:16",
+      "ok": true,
+      "detail": "9:16",
+      "blocking": true
+    },
+    {
+      "check": "fps 30 constante",
+      "ok": true,
+      "detail": "r=30/1 avg=30/1",
+      "blocking": true
+    },
+    {
+      "check": "SAR 1:1",
+      "ok": true,
+      "detail": "1:1",
+      "blocking": true
+    },
+    {
+      "check": "bitrate de vídeo ≤ 12 Mbps",
+      "ok": true,
+      "detail": "1.76 Mbps",
+      "blocking": true
+    },
+    {
+      "check": "duração 15–20 s",
+      "ok": true,
+      "detail": "18.133 s",
+      "blocking": true
+    },
+    {
+      "check": "duração ≤ 90 s",
+      "ok": true,
+      "detail": "18.133 s",
+      "blocking": true
+    },
+    {
+      "check": "tamanho ≤ 100 MB",
+      "ok": true,
+      "detail": "4.01 MB",
+      "blocking": true
+    },
+    {
+      "check": "moov no início (faststart)",
+      "ok": true,
+      "detail": "True",
+      "blocking": true
+    },
+    {
+      "check": "sem faixa de áudio (modo silent)",
+      "ok": true,
+      "detail": "0 faixa(s)",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'inicio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 22.3",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'hook_hook_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 54.4",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'scene_e1_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 45.0",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'scene_e2_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 46.6",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'scene_e3_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 49.8",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'cta_cta_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 58.8",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'fim' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 58.8",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (hook)",
+      "ok": true,
+      "detail": "diferença média 8.70 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (e1)",
+      "ok": true,
+      "detail": "diferença média 8.87 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (e2)",
+      "ok": true,
+      "detail": "diferença média 8.93 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (e3)",
+      "ok": true,
+      "detail": "diferença média 8.73 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (cta)",
+      "ok": true,
+      "detail": "diferença média 6.90 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "movimento de câmera presente (e1)",
+      "ok": true,
+      "detail": "diferença média entre quadros 0.568",
+      "blocking": true
+    },
+    {
+      "check": "movimento sem saltos (e1)",
+      "ok": true,
+      "detail": "máx/mediana = 1.06 em 11 pares (t=4.40s; limite 3.0)",
+      "blocking": false
+    },
+    {
+      "check": "movimento de câmera presente (e2)",
+      "ok": true,
+      "detail": "diferença média entre quadros 0.638",
+      "blocking": true
+    },
+    {
+      "check": "movimento sem saltos (e2)",
+      "ok": true,
+      "detail": "máx/mediana = 1.07 em 11 pares (t=7.89s; limite 3.0)",
+      "blocking": false
+    },
+    {
+      "check": "movimento de câmera presente (e3)",
+      "ok": true,
+      "detail": "diferença média entre quadros 0.309",
+      "blocking": true
+    },
+    {
+      "check": "movimento sem saltos (e3)",
+      "ok": true,
+      "detail": "máx/mediana = 1.35 em 11 pares (t=11.82s; limite 3.0)",
+      "blocking": false
+    }
+  ],
+  "cta_only": false,
+  "sources": [
+    {
+      "scene": "e1",
+      "category": "Esporte e lazer",
+      "path": "reels/assets/synthetic/s4_esporte.jpg",
+      "kind": "synthetic_demo",
+      "origin": "gerado por reel_gen/synth.py (padrão waves, seed 404)",
+      "license": "material próprio do projeto (sintético, sem terceiros)"
+    },
+    {
+      "scene": "e2",
+      "category": "Beleza e cuidados",
+      "path": "reels/assets/synthetic/s5_beleza.jpg",
+      "kind": "synthetic_demo",
+      "origin": "gerado por reel_gen/synth.py (padrão rings, seed 505)",
+      "license": "material próprio do projeto (sintético, sem terceiros)"
+    },
+    {
+      "scene": "e3",
+      "category": "Ferramentas e jardim",
+      "path": "reels/assets/synthetic/s6_ferramentas.jpg",
+      "kind": "synthetic_demo",
+      "origin": "gerado por reel_gen/synth.py (padrão dots, seed 606)",
+      "license": "material próprio do projeto (sintético, sem terceiros)"
+    }
+  ],
+  "render": {
+    "wall_s": 35.86,
+    "final_pass_s": 9.17,
+    "segments": [
+      {
+        "segment": "hook",
+        "wall_s": 4.41,
+        "inputs": 5
+      },
+      {
+        "segment": "e1",
+        "wall_s": 5.91,
+        "inputs": 8
+      },
+      {
+        "segment": "e2",
+        "wall_s": 5.62,
+        "inputs": 7
+      },
+      {
+        "segment": "e3",
+        "wall_s": 5.42,
+        "inputs": 6
+      },
+      {
+        "segment": "cta",
+        "wall_s": 5.34,
+        "inputs": 7
+      }
+    ],
+    "peak_rss_mb": 490.8,
+    "peak_rss_note": "maior RSS entre os processos-filho (FFmpeg) desta execução",
+    "threads": 2,
+    "preset": "veryfast"
+  },
+  "video_path": "reels/out/example_template.mp4",
+  "frames": [
+    {
+      "label": "inicio",
+      "t": 0.0,
+      "path": "reels/out/frames/example_template/00_inicio.jpg",
+      "stddev": 22.27837866704245
+    },
+    {
+      "label": "hook_hook_meio",
+      "t": 1.15,
+      "path": "reels/out/frames/example_template/01_hook_hook_meio.jpg",
+      "stddev": 54.439496749126135
+    },
+    {
+      "label": "scene_e1_meio",
+      "t": 4.516666666666667,
+      "path": "reels/out/frames/example_template/02_scene_e1_meio.jpg",
+      "stddev": 44.95106567008626
+    },
+    {
+      "label": "scene_e2_meio",
+      "t": 8.466666666666667,
+      "path": "reels/out/frames/example_template/03_scene_e2_meio.jpg",
+      "stddev": 46.5829092243635
+    },
+    {
+      "label": "scene_e3_meio",
+      "t": 12.383333333333333,
+      "path": "reels/out/frames/example_template/04_scene_e3_meio.jpg",
+      "stddev": 49.763340395607024
+    },
+    {
+      "label": "cta_cta_meio",
+      "t": 17.883333333333333,
+      "path": "reels/out/frames/example_template/05_cta_cta_meio.jpg",
+      "stddev": 58.84812641739171
+    },
+    {
+      "label": "fim",
+      "t": 18.033333,
+      "path": "reels/out/frames/example_template/06_fim.jpg",
+      "stddev": 58.84650835487461
+    }
+  ],
+  "duration_s": 18.133333,
+  "size_bytes": 4005556,
+  "video": {
+    "codec_name": "h264",
+    "profile": "High",
+    "pix_fmt": "yuv420p",
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "avg_frame_rate": "30/1",
+    "bit_rate": "1763924",
+    "nb_frames": "544"
+  },
+  "sha256": "26147ec1945f979960aa3c946c77a2d6d3d4b4b1e3a3b643ba1a2726c4f9454f",
+  "frames_md5": "3016e6c7a522938b51965ff02d1c944c",
+  "pipeline_wall_s": 45.09,
+  "approved_technical": true,
+  "status": "testado localmente (não validado com serviço real; não aprovado para produção)"
+}

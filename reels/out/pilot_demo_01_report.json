@@ -1,0 +1,450 @@
+{
+  "id": "pilot_demo_01",
+  "config": "reels/configs/pilot_demo_01.json",
+  "tools": {
+    "python": "3.13.18",
+    "pillow": "12.3.0",
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "ffprobe": "ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers",
+    "libx264": true,
+    "aac": true,
+    "platform": "Linux-6.18.44-fc-v553-x86_64-with-glibc2.39"
+  },
+  "timeline": {
+    "fps": 30,
+    "total_s": 18.3,
+    "segments": [
+      {
+        "kind": "hook",
+        "key": "hook",
+        "start_s": 0.0,
+        "end_s": 2.5,
+        "duration_s": 2.5,
+        "frames": 75,
+        "transition_in": null,
+        "transition_out": {
+          "type": "fade",
+          "duration": 0.4
+        }
+      },
+      {
+        "kind": "scene",
+        "key": "s1",
+        "start_s": 2.1,
+        "end_s": 6.7,
+        "duration_s": 4.6,
+        "frames": 138,
+        "transition_in": {
+          "type": "fade",
+          "duration": 0.4
+        },
+        "transition_out": {
+          "type": "slideleft",
+          "duration": 0.4
+        }
+      },
+      {
+        "kind": "scene",
+        "key": "s2",
+        "start_s": 6.3,
+        "end_s": 10.9,
+        "duration_s": 4.6,
+        "frames": 138,
+        "transition_in": {
+          "type": "slideleft",
+          "duration": 0.4
+        },
+        "transition_out": {
+          "type": "wipeleft",
+          "duration": 0.4
+        }
+      },
+      {
+        "kind": "scene",
+        "key": "s3",
+        "start_s": 10.5,
+        "end_s": 15.1,
+        "duration_s": 4.6,
+        "frames": 138,
+        "transition_in": {
+          "type": "wipeleft",
+          "duration": 0.4
+        },
+        "transition_out": {
+          "type": "fade",
+          "duration": 0.4
+        }
+      },
+      {
+        "kind": "cta",
+        "key": "cta",
+        "start_s": 14.7,
+        "end_s": 18.3,
+        "duration_s": 3.6,
+        "frames": 108,
+        "transition_in": {
+          "type": "fade",
+          "duration": 0.4
+        },
+        "transition_out": null
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [],
+  "checks": [
+    {
+      "check": "gancho ≤ 3.0 s",
+      "blocking": true,
+      "ok": true,
+      "detail": "2.50 s"
+    },
+    {
+      "check": "CTA presente e ≥ 2.5 s",
+      "blocking": true,
+      "ok": true,
+      "detail": "3.60 s"
+    },
+    {
+      "check": "camadas dentro da margem segura, fontes mínimas, contraste e logo",
+      "ok": true,
+      "detail": "28 camadas verificadas por geometria",
+      "blocking": true
+    },
+    {
+      "check": "contraste mínimo ≥ 4.5",
+      "blocking": true,
+      "ok": true,
+      "detail": "pior caso 6.47:1"
+    },
+    {
+      "check": "regras de conteúdo (seção 4)",
+      "blocking": true,
+      "ok": true,
+      "detail": "0 erro(s)"
+    },
+    {
+      "check": "contêiner MP4",
+      "ok": true,
+      "detail": "mov,mp4,m4a,3gp,3g2,mj2",
+      "blocking": true
+    },
+    {
+      "check": "um fluxo de vídeo",
+      "ok": true,
+      "detail": "1 fluxo(s)",
+      "blocking": true
+    },
+    {
+      "check": "codec h264",
+      "ok": true,
+      "detail": "h264",
+      "blocking": true
+    },
+    {
+      "check": "pix_fmt yuv420p",
+      "ok": true,
+      "detail": "yuv420p",
+      "blocking": true
+    },
+    {
+      "check": "perfil High/Main",
+      "ok": true,
+      "detail": "High",
+      "blocking": true
+    },
+    {
+      "check": "resolução 1080x1920",
+      "ok": true,
+      "detail": "1080x1920",
+      "blocking": true
+    },
+    {
+      "check": "razão 9:16",
+      "ok": true,
+      "detail": "9:16",
+      "blocking": true
+    },
+    {
+      "check": "fps 30 constante",
+      "ok": true,
+      "detail": "r=30/1 avg=30/1",
+      "blocking": true
+    },
+    {
+      "check": "SAR 1:1",
+      "ok": true,
+      "detail": "1:1",
+      "blocking": true
+    },
+    {
+      "check": "bitrate de vídeo ≤ 12 Mbps",
+      "ok": true,
+      "detail": "1.43 Mbps",
+      "blocking": true
+    },
+    {
+      "check": "duração 15–20 s",
+      "ok": true,
+      "detail": "18.300 s",
+      "blocking": true
+    },
+    {
+      "check": "duração ≤ 90 s",
+      "ok": true,
+      "detail": "18.300 s",
+      "blocking": true
+    },
+    {
+      "check": "tamanho ≤ 100 MB",
+      "ok": true,
+      "detail": "3.28 MB",
+      "blocking": true
+    },
+    {
+      "check": "moov no início (faststart)",
+      "ok": true,
+      "detail": "True",
+      "blocking": true
+    },
+    {
+      "check": "sem faixa de áudio (modo silent)",
+      "ok": true,
+      "detail": "0 faixa(s)",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'inicio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 24.9",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'hook_hook_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 58.1",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'scene_s1_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 45.7",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'scene_s2_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 50.5",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'scene_s3_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 45.0",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'cta_cta_meio' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 59.0",
+      "blocking": true
+    },
+    {
+      "check": "quadro 'fim' não uniforme",
+      "ok": true,
+      "detail": "desvio-padrão 59.0",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (hook)",
+      "ok": true,
+      "detail": "diferença média 8.21 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (s1)",
+      "ok": true,
+      "detail": "diferença média 7.75 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (s2)",
+      "ok": true,
+      "detail": "diferença média 8.47 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (s3)",
+      "ok": true,
+      "detail": "diferença média 8.43 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "logo íntegro (cta)",
+      "ok": true,
+      "detail": "diferença média 6.72 (máx. 14.0)",
+      "blocking": true
+    },
+    {
+      "check": "movimento de câmera presente (s1)",
+      "ok": true,
+      "detail": "diferença média entre quadros 0.794",
+      "blocking": true
+    },
+    {
+      "check": "movimento sem saltos (s1)",
+      "ok": true,
+      "detail": "máx/mediana = 1.30 em 11 pares (t=3.65s; limite 3.0)",
+      "blocking": false
+    },
+    {
+      "check": "movimento de câmera presente (s2)",
+      "ok": true,
+      "detail": "diferença média entre quadros 0.295",
+      "blocking": true
+    },
+    {
+      "check": "movimento sem saltos (s2)",
+      "ok": true,
+      "detail": "máx/mediana = 2.58 em 11 pares (t=8.05s; limite 3.0)",
+      "blocking": false
+    },
+    {
+      "check": "movimento de câmera presente (s3)",
+      "ok": true,
+      "detail": "diferença média entre quadros 0.164",
+      "blocking": true
+    },
+    {
+      "check": "movimento sem saltos (s3)",
+      "ok": true,
+      "detail": "máx/mediana = 1.24 em 11 pares (t=12.05s; limite 3.0)",
+      "blocking": false
+    }
+  ],
+  "cta_only": false,
+  "sources": [
+    {
+      "scene": "s1",
+      "category": "Tecnologia",
+      "path": "reels/assets/synthetic/s1_tecnologia.jpg",
+      "kind": "synthetic_demo",
+      "origin": "gerado por reel_gen/synth.py (padrão circuit, seed 101)",
+      "license": "material próprio do projeto (sintético, sem terceiros)"
+    },
+    {
+      "scene": "s2",
+      "category": "Casa e cozinha",
+      "path": "reels/assets/synthetic/s2_casa_cozinha.jpg",
+      "kind": "synthetic_demo",
+      "origin": "gerado por reel_gen/synth.py (padrão blobs, seed 202)",
+      "license": "material próprio do projeto (sintético, sem terceiros)"
+    },
+    {
+      "scene": "s3",
+      "category": "Moda e acessórios",
+      "path": "reels/assets/synthetic/s3_moda.jpg",
+      "kind": "synthetic_demo",
+      "origin": "gerado por reel_gen/synth.py (padrão bands, seed 303)",
+      "license": "material próprio do projeto (sintético, sem terceiros)"
+    }
+  ],
+  "render": {
+    "wall_s": 34.54,
+    "final_pass_s": 8.32,
+    "segments": [
+      {
+        "segment": "hook",
+        "wall_s": 3.95,
+        "inputs": 5
+      },
+      {
+        "segment": "s1",
+        "wall_s": 5.97,
+        "inputs": 7
+      },
+      {
+        "segment": "s2",
+        "wall_s": 5.91,
+        "inputs": 7
+      },
+      {
+        "segment": "s3",
+        "wall_s": 5.75,
+        "inputs": 7
+      },
+      {
+        "segment": "cta",
+        "wall_s": 4.63,
+        "inputs": 7
+      }
+    ],
+    "peak_rss_mb": 491.3,
+    "peak_rss_note": "maior RSS entre os processos-filho (FFmpeg) desta execução",
+    "threads": 2,
+    "preset": "veryfast"
+  },
+  "video_path": "reels/out/pilot_demo_01.mp4",
+  "frames": [
+    {
+      "label": "inicio",
+      "t": 0.0,
+      "path": "reels/out/frames/pilot_demo_01/00_inicio.jpg",
+      "stddev": 24.94511725557051
+    },
+    {
+      "label": "hook_hook_meio",
+      "t": 1.05,
+      "path": "reels/out/frames/pilot_demo_01/01_hook_hook_meio.jpg",
+      "stddev": 58.0961932743752
+    },
+    {
+      "label": "scene_s1_meio",
+      "t": 4.4,
+      "path": "reels/out/frames/pilot_demo_01/02_scene_s1_meio.jpg",
+      "stddev": 45.7423153131173
+    },
+    {
+      "label": "scene_s2_meio",
+      "t": 8.599999999999998,
+      "path": "reels/out/frames/pilot_demo_01/03_scene_s2_meio.jpg",
+      "stddev": 50.49790175326408
+    },
+    {
+      "label": "scene_s3_meio",
+      "t": 12.799999999999997,
+      "path": "reels/out/frames/pilot_demo_01/04_scene_s3_meio.jpg",
+      "stddev": 44.95406529507748
+    },
+    {
+      "label": "cta_cta_meio",
+      "t": 18.049999999999997,
+      "path": "reels/out/frames/pilot_demo_01/05_cta_cta_meio.jpg",
+      "stddev": 58.95724966248944
+    },
+    {
+      "label": "fim",
+      "t": 18.2,
+      "path": "reels/out/frames/pilot_demo_01/06_fim.jpg",
+      "stddev": 58.9565657398364
+    }
+  ],
+  "duration_s": 18.3,
+  "size_bytes": 3276381,
+  "video": {
+    "codec_name": "h264",
+    "profile": "High",
+    "pix_fmt": "yuv420p",
+    "width": 1080,
+    "height": 1920,
+    "r_frame_rate": "30/1",
+    "avg_frame_rate": "30/1",
+    "bit_rate": "1429050",
+    "nb_frames": "549"
+  },
+  "sha256": "1aadb48a3f06095cc9a84c98c592a7c129f628dac2245d6ae3533f4d48e2a1df",
+  "frames_md5": "93c5c15ca189b3a3b86bbc14449ec7a4",
+  "pipeline_wall_s": 43.88,
+  "approved_technical": true,
+  "status": "testado localmente (não validado com serviço real; não aprovado para produção)"
+}
