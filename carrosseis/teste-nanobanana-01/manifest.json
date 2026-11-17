@@ -1,0 +1,16 @@
+{
+  "id": "teste-nanobanana-01",
+  "gerado_em": "2026-11-17T01:54:13Z",
+  "resolucao": "1080x1350",
+  "status": "pronto",
+  "slides": [
+    {
+      "arquivo": "slide_01.jpg",
+      "layout": "foto_topo",
+      "foto": "nb-0001",
+      "status_foto": "aprovada",
+      "sha256": "e43b3a1ca6c13c7a929c49c08c8dfe26bc70a16762450786354abcd6151a197d",
+      "validacao": "ok"
+    }
+  ]
+}

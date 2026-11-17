@@ -31,6 +31,41 @@
         "nota": null
       },
       "repositorio": "SuzukiMyke/SuzukiOfertas-Instagram-Media"
+    },
+    "nb-0001": {
+      "id": "nb-0001",
+      "provedor": "nano-banana",
+      "nome_arquivo_original": "Gemini_Nano_Banana_cozinha_original.jpg",
+      "sha256_original": "09577f92c725b1e8f4c73ecfeed9152ba488213ccbf44fc94261d3a0894e3de4",
+      "sha256": "68ed5b4b8b001420bdb180576bcaccae9ba3dd0bf144d5ce0ba74f11e02d7936",
+      "largura": 896,
+      "altura": 1200,
+      "formato_original": "JPEG",
+      "data": "2026-11-17T01:53:52Z",
+      "tipo_data": "importacao",
+      "origem": "ia",
+      "descricao": "Cozinha moderna com bancada de madeira, sacola de compras com frutas e verduras, cafeteira, potes, ovos e caixa de entrega; luz natural (fornecida pelo usuário, gerada no Gemini Nano Banana)",
+      "prompt": null,
+      "restricoes_uso": [
+        "Imagem gerada por IA (Gemini Nano Banana): não representar como fotografia real",
+        "Aprovada somente para ambientação: não representa produto, modelo ou marca específicos",
+        "Não usar como foto de produto real nem associar a preços ou ofertas específicas",
+        "Eletrodomésticos exibem logotipos e rótulos ilegíveis gerados pela IA: não destacar nem ampliar",
+        "Não alterar logotipos de terceiros"
+      ],
+      "caminho_github": "photos/nb-0001.jpg",
+      "caminho_original": "photos/originais/nb-0001__Gemini_Nano_Banana_cozinha_original.jpg",
+      "aprovacao": {
+        "status": "aprovada",
+        "por": "Myke",
+        "data": "2026-11-17T01:53:52Z",
+        "nota": "Fotografia fornecida pelo usuário na sessão (original baixado do Gemini, 896x1200). Aprovada para ambientação; não autoriza representação de produto específico. Arquivo recebido como 2.jpg e renomeado sem alteração de bytes.",
+        "escopo": "ambientação; não autoriza representação de produto específico"
+      },
+      "repositorio": "SuzukiMyke/SuzukiOfertas-Instagram-Media",
+      "ferramenta_origem": "Gemini Nano Banana (Google)",
+      "gerada_por_ia": true,
+      "fornecida_por": "usuário (upload na sessão, etapa 5.2)"
     }
   }
 }

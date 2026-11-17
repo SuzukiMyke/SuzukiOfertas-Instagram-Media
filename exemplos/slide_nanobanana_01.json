@@ -1,0 +1,14 @@
+{
+  "id": "teste-nanobanana-01",
+  "permitir_fotos_pendentes": false,
+  "slides": [
+    {
+      "layout": "foto_topo",
+      "foto": "nb-0001",
+      "foco": [0.5, 0.45],
+      "titulo": "SUA COZINHA MERECE",
+      "destaque": "ESSES ACHADINHOS!",
+      "texto": "Descubra produtos e novidades para facilitar o seu dia a dia. Acompanhe o Suzuki Ofertas no WhatsApp e Telegram."
+    }
+  ]
+}
