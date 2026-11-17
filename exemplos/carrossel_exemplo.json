@@ -1,0 +1,37 @@
+{
+  "id": "exemplo-5-erros",
+  "permitir_fotos_pendentes": false,
+  "slides": [
+    {
+      "layout": "foto_topo",
+      "foto": "flux-0001",
+      "foco": [0.5, 0.4],
+      "titulo": "5 ERROS QUE FAZEM",
+      "destaque": "VOCÊ GASTAR MAIS!",
+      "texto": "Descubra como evitar desperdícios nas compras online."
+    },
+    {
+      "layout": "cartao",
+      "foto": "auto",
+      "provedor": "nano-banana",
+      "titulo": "ERRO 1:",
+      "destaque": "COMPRAR POR IMPULSO",
+      "texto": "Espere 24 horas antes de finalizar compras não planejadas."
+    },
+    {
+      "layout": "foto_cheia",
+      "foto": "auto",
+      "titulo": "ERRO 2: IGNORAR",
+      "destaque": "O VALOR DO FRETE",
+      "texto": "Some o frete ao preço antes de comparar lojas."
+    },
+    {
+      "layout": "cartao",
+      "foto": "flux-0001",
+      "reutilizar": true,
+      "titulo": "ANTES DE COMPRAR,",
+      "destaque": "COMPARE.",
+      "texto": "Salve este post para consultar depois."
+    }
+  ]
+}

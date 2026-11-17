@@ -1,0 +1,36 @@
+{
+  "versao": 1,
+  "fotos": {
+    "flux-0001": {
+      "id": "flux-0001",
+      "provedor": "cloudflare-flux",
+      "modelo": "@cf/black-forest-labs/flux-1-schnell",
+      "passos": 4,
+      "prompt": "Photorealistic premium editorial photograph of a modern cozy Brazilian home, wooden desk with open laptop, shopping delivery boxes and neatly arranged household items, warm natural daylight, sophisticated commercial photography, realistic objects and proportions, no people, no visible brands, no logos, no writing, no watermarks, clean composition.",
+      "nome_arquivo_original": "foto_flux_01.jpg",
+      "sha256_original": "79e1b0a618d6b719a430492a0436e491073053fb070bb5353c49e0d11498ee09",
+      "sha256": "79e1b0a618d6b719a430492a0436e491073053fb070bb5353c49e0d11498ee09",
+      "largura": 1024,
+      "altura": 1024,
+      "data": "2026-11-16T19:01:53Z",
+      "tipo_data": "geracao",
+      "origem": "ia",
+      "descricao": "Mesa de madeira com notebook e caixa de entrega em sala aconchegante (etapa 4.8)",
+      "consumo_neuronios": 172.8,
+      "restricoes_uso": [
+        "Imagem gerada por IA: não representar como fotografia real",
+        "Não usar como foto de produto real",
+        "Etiquetas da caixa contêm rabiscos ilegíveis gerados pela IA"
+      ],
+      "caminho_github": "photos/foto_flux_01.jpg",
+      "metadados_legados": "photos/foto_flux_01.json",
+      "aprovacao": {
+        "status": "pendente",
+        "por": null,
+        "data": null,
+        "nota": null
+      },
+      "repositorio": "SuzukiMyke/SuzukiOfertas-Instagram-Media"
+    }
+  }
+}
