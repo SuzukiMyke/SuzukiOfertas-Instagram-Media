@@ -23,6 +23,8 @@ def processar(troca: Path | str, saida: Path | str, agora: datetime, *, decisoes
               cfg: Configuracao | None = None) -> dict:
     """Executa o fluxo completo. Devolve o resumo (também gravado em ``saida/resumo.json``)."""
     cfg = cfg or Configuracao()
+    if cfg.contrato != "1.0":
+        raise ValueError("este fluxo é o modo 1.0; o modo 1.1 é explícito: use pipeline_v11.processar_v11")
     troca, saida = Path(troca), Path(saida)
     if _dentro(saida, troca) or _dentro(troca, saida / "fichas"):
         raise ValueError("a pasta de saída não pode ficar dentro da pasta de troca (que é somente leitura)")

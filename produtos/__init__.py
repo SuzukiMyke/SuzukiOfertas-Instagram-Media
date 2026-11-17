@@ -10,3 +10,4 @@ com decisões humanas de ``decisoes``) -> ``fichas`` (JSON + Markdown) ->
 ``reel_fragmento`` (conversão opcional, sem executar o gerador de Reels).
 """
 FICHA_VERSION = "1.0.0"
+FICHA_VERSION_V11 = "1.1.0"

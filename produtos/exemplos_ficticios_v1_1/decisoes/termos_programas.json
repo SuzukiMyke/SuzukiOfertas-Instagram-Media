@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "termos": [
+    {
+      "termoId": "T-FICT-001",
+      "programa": "Programa Fict\u00edcio",
+      "tipoEvidencia": "termo_programa",
+      "escopo": "provider:EXEMPLO_A",
+      "referencia": "https://programa.ficticio.example/termos",
+      "arquivoEvidencia": "termo_ficticio_001.txt",
+      "evidenciaSha256": "0288c1c8c62c54a10caa50cf8feed8c9b516961531c026244a0c21a43b07c0b9",
+      "capturadoEm": "2026-11-10T12:00:00Z",
+      "autor": "Maria Revisora"
+    }
+  ]
+}

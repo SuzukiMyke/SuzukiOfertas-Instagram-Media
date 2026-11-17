@@ -1,0 +1,23 @@
+{
+  "decisoesVersion": "1.0",
+  "decisoes": [
+    {
+      "provider": "EXEMPLO_A",
+      "productId": "A001",
+      "exportId": "00000000-0000-4000-8000-000000000001",
+      "decisao": "aprovado_para_rascunho",
+      "autor": "Maria Revisora",
+      "data": "2026-11-17T14:30:00Z",
+      "motivo": "exemplo fict\u00edcio"
+    },
+    {
+      "provider": "EXEMPLO_B",
+      "productId": "B001",
+      "exportId": "00000000-0000-4000-8000-000000000004",
+      "decisao": "aprovado_para_rascunho",
+      "autor": "Maria Revisora",
+      "data": "2026-11-17T14:31:00Z",
+      "motivo": "rascunho editorial fict\u00edcio"
+    }
+  ]
+}

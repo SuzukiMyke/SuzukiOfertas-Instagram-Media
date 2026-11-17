@@ -1,0 +1,17 @@
+{
+  "manifestVersion": "1.0",
+  "generatedAt": "2026-11-17T14:00:00Z",
+  "count": 2,
+  "files": [
+    {
+      "name": "produto_EXEMPLO_A_A001_20261117T130500Z.json",
+      "sha256": "f9a64551842b79c395a08c3406b456d8c1a1f21a7c140a0f35cb94fa9bc9b3a7",
+      "bytes": 1461
+    },
+    {
+      "name": "produto_EXEMPLO_A_A002_20261117T130500Z.json",
+      "sha256": "1c9925ed732aac0607da20c6bc2788d675d90630e930f0a59d77fa09fc68b28f",
+      "bytes": 1461
+    }
+  ]
+}

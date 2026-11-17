@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "permissoes": [
+    {
+      "provider": "EXEMPLO_A",
+      "productId": "A001",
+      "status": "confirmada",
+      "termoId": "T-FICT-001",
+      "fotoSha256": "2e574a430ab2b13cbe5021ad8ee547080a3abf42249e0a68ed7f36f29d8ead28",
+      "autor": "Maria Revisora",
+      "data": "2026-11-17T14:00:00Z",
+      "motivo": "foto conferida (exemplo fict\u00edcio)"
+    }
+  ]
+}

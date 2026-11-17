@@ -28,6 +28,7 @@ class Configuracao:
     revalidacao_horas: float | None = 24.0   # proposta do contrato, ajustável; None desativa
     arquivo_dias: int | None = 30
     tolerancia_futuro_min: int = 5
+    contrato: str = "1.0"                   # "1.1" só em processar_v11 (adoção explícita; ver pipeline_v11)
 
 
 @dataclass

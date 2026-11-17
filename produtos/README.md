@@ -88,3 +88,36 @@ autorização própria, fora deste fluxo**; B nunca chega a esse estado.
 o fragmento contra o esquema real e a política de conteúdo (`normalize` + `check_rules`) **sem** executar o gerador
 e sem alterá-lo. O preço fica **fora do vídeo** (nunca preenche `price/discount/stock/rating`); a ficha traz o aviso
 para a legenda. Divergências em relação ao plano estão em `schema/CAMPOS.md` (seção "Decisões e divergências").
+
+---
+
+## Modo 1.1 (contrato v1.1 — Etapa 5.11)
+
+> **Especificação aprovada; implementação testada SOMENTE com dados fictícios e offline. Não validada em serviço real, nenhuma
+> aprovação para produção.** O modo 1.0 acima permanece o padrão e **não mudou**: a saída é idêntica byte a byte (hashes golden
+> do commit `b317f17` em `tests/golden/golden_modo_1_0.json`, conferidos por `tests/test_golden_modo_1_0.py`).
+
+Adoção **explícita** (`--contrato 1.1`; biblioteca: `pipeline_v11.processar_v11` + `ConfiguracaoV11`). Sem `--contrato`, nada muda.
+
+```bash
+python3 -m produtos --contrato 1.1 --dados produtos/exemplos_ficticios_v1_1/exportacoes \
+  --decisoes produtos/exemplos_ficticios_v1_1/decisoes/decisoes.json \
+  --permissoes produtos/exemplos_ficticios_v1_1/decisoes/permissoes_fotos.json \
+  --termos produtos/exemplos_ficticios_v1_1/decisoes/termos_programas.json \
+  --fotos-dir produtos/exemplos_ficticios_v1_1/fotos --saida /tmp/saida_v11 --agora 2026-11-17T15:00:00Z
+```
+
+| Módulo novo | Papel (contrato) |
+|---|---|
+| `leitor_v11.py` | **`manifest.json` obrigatório em cada pasta `A/` e `B/`** (lotes independentes, sem recursão). Sem manifesto, ilegível, contagem/lista/hash inconsistentes ou arquivo não listado → **lote inteiro em quarentena**. Fonte na pasta errada → quarentena do arquivo. (§2/S4) |
+| `avaliacao_v11.py` | Teto de 24 h **que não pode ser desativado nem aumentado**; B → `candidato_nao_verificado` (só rascunho editorial); identidade/preço invalidam aprovação; fatos frescos × em revisão (30 dias; dormente sem fonte de fatos). (§4, §5, §7.2, §9) |
+| `permissoes.py` | Lê `termos_programas.json` e `permissoes_fotos.json` (nunca grava). Foto só com registro humano + termo + hash do arquivo (≤ 2 MB, JPEG/PNG/WebP). `photo.usePermission` exportado é **informativo**. (§8, §10) |
+| `prepublicacao.py` | Portão puro `liberar / omitir_alegacao / bloquear` com relógio e horário efetivo como parâmetros. (§6) |
+| `politica_titulos.py` | Níveis ALTA/MÉDIA (lista mínima, sujeita a falsos positivos). (§7.1) |
+| `fichas_v11.py`, `pipeline_v11.py`, `reel_fragmento_v11.py` | Ficha 1.1, orquestração (saída nunca dentro de uma entrada; S2) e fragmento com conferência de hash (§8.8). |
+
+**Desabilitado / inexistente (sem simulação):** reverificação do preço no instante da publicação (§6.3); verificação de autoria de commit
+(S3 → `nao_verificavel` no `resumo.json`); importador de fotos; exportador do agente; qualquer publicação/agendamento. O portão
+apenas **recomenda**. O `resumo.json` registra o contrato aplicado, o estado de cada lote e os commits informados (`--commit-dados`, `--commit-decisoes`, `--commit-fotos`).
+
+Exemplos fictícios do 1.1: `exemplos_ficticios_v1_1/` (imagem sintética de ruído; nenhum dado real).
