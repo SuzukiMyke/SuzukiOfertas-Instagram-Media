@@ -30,9 +30,22 @@ def main(argv=None) -> int:
     ap.add_argument("--permissoes", default=None, help="[1.1] permissoes_fotos.json (somente leitura)")
     ap.add_argument("--termos", default=None, help="[1.1] termos_programas.json (somente leitura)")
     ap.add_argument("--fotos-dir", default=None, help="[1.1] pasta do repositório de fotos (somente leitura)")
+    ap.add_argument("--legado", action="store_true", help="[1.0] confirma o uso do contrato 1.0 (exigido com --dados-reais)")
+    ap.add_argument("--dados-reais", action="store_true",
+                    help="entrada de dados reais: exige --contrato; 1.0 exige --legado (DESABILITADA nesta etapa)")
     for r in ("dados", "decisoes", "fotos"):
         ap.add_argument(f"--commit-{r}", default=None, help=f"[1.1] commit lido do repositório {r} (registrado no resumo)")
     a = ap.parse_args(argv)
+    if a.legado or a.dados_reais:
+        from .selecao_contrato import DADOS_REAIS_HABILITADO, SelecaoInvalida, selecionar
+        try:
+            selecionar(a.contrato, a.legado, a.dados_reais)
+        except SelecaoInvalida as e:
+            print(f"erro: {e}", file=sys.stderr)
+            return 2
+        if a.dados_reais and not DADOS_REAIS_HABILITADO:
+            print("entrada de dados reais DESABILITADA nesta etapa (exige autorização própria); nada foi lido", file=sys.stderr)
+            return 3
     if a.contrato == "1.1":
         if not a.dados:
             print("modo 1.1 exige --dados (pasta com A/ e B/)", file=sys.stderr)

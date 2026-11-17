@@ -45,6 +45,8 @@ def montar_v11(produto: Produto, av: AvaliacaoV11, agora: datetime) -> dict:
         f["preco"]["exibicao"] = None
         f["avisos"].append(AVISO_B_PRECO)
         f["alegacaoComercialPermitida"] = False
+    elif av.fonte_comercial and av.fonte_comercial["alegacaoComercialPermitida"] is False:
+        f["alegacaoComercialPermitida"] = False
     else:
         f["alegacaoComercialPermitida"] = "somente pelo portão de pré-publicação (prepublicacao.avaliar_portao)"
     f["avisos"].append(AVISO_SEM_VERIFICACAO)
@@ -63,6 +65,18 @@ def montar_v11(produto: Produto, av: AvaliacaoV11, agora: datetime) -> dict:
     f["aprovacaoInvalidadaPorIdentidade"] = av.aprovacao_invalidada_por_identidade
     if av.aprovacao_invalidada_por_identidade:
         f["avisos"].append("Aprovação anterior INVALIDADA por mudança de identidade; nova revisão humana necessária.")
+    f["fonteSelecionada"] = av.fonte_selecionada or av.origem
+    f["divergenciasAB"] = av.divergencias_ab
+    f["fonteComercial"] = av.fonte_comercial
+    f["editorialB"] = av.editorial_b
+    f["decisoesInaplicaveis"] = av.decisoes_inaplicaveis
+    if av.divergencias_ab:
+        f["avisos"].append("Divergência A × B em " + ", ".join(av.divergencias_ab["campos"]) + ": revisão humana obrigatória.")
+    if av.fonte_comercial and av.fonte_comercial["estadoAutomatico"] == "expirado":
+        f["avisos"].append("Fonte A expirada: nenhuma alegação comercial; ficha sustentada por B apenas como rascunho editorial.")
+    for d in av.decisoes_inaplicaveis:
+        f["avisos"].append(f"Decisão humana INAPLICÁVEL ({d['codigo']}): {d['motivo']} [exportId {d['exportId'][:8]}…, "
+                           f"{d['decisao']}, {d['autor']}, {d['data']}]")
     return f
 
 
@@ -78,6 +92,10 @@ def para_markdown_v11(f: dict) -> str:
              f"- Fatos para uso: {len(f['fatosParaUso'])} · fatos em revisão: {len(f['fatosEmRevisao'])}"
              + (" (regra dormente: sem fonte de fatos)" if f["regraDeFatosDormente"] else ""),
              f"- Foto: utilizável **{'sim' if f['foto']['utilizavel'] else 'não'}**"
-             + (f" — {f['foto']['motivo']}" if f["foto"]["motivo"] else ""), ""]
+             + (f" — {f['foto']['motivo']}" if f["foto"]["motivo"] else ""),
+             f"- Fonte que sustenta a ficha: `{f['fonteSelecionada']}`"
+             + (f" · divergências A × B: {', '.join(f['divergenciasAB']['campos'])}" if f["divergenciasAB"] else "")]
+    extra += [f"- Decisão inaplicável (`{d['codigo']}`): {d['motivo']}" for d in f["decisoesInaplicaveis"]]
+    extra.append("")
     return "> Ficha do modo 1.1 (especificação aprovada; não validada em serviço real nem aprovada para produção).\n\n" \
         + corpo + "\n".join(extra)

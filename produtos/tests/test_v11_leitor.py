@@ -48,16 +48,17 @@ class LeitorV11Test(BaseV11):
         self.assertEqual(ler_lote(self.exp / "A", AGORA, "A").status, "quarentena_de_lote")
 
     def test_inconsistencias_levam_o_lote_inteiro_a_quarentena(self):
-        base = {"manifestVersion": "1.0"}
+        base = {"manifestVersion": "1.0", "generatedAt": "2026-11-17T12:00:00Z"}
         a1, a2 = (produto_a(1, "A001"), produto_a(2, "A002"))
         import hashlib
         h = lambda o: hashlib.sha256(json.dumps(o, ensure_ascii=False).encode()).hexdigest()
+        n = lambda o: len(json.dumps(o, ensure_ascii=False).encode())
         casos = {
-            "contagem": {**base, "count": 5, "files": [{"name": "a1.json", "sha256": h(a1)}, {"name": "a2.json", "sha256": h(a2)}]},
-            "listado_ausente": {**base, "count": 3, "files": [{"name": "a1.json", "sha256": h(a1)}, {"name": "a2.json", "sha256": h(a2)},
-                                                              {"name": "a3.json", "sha256": "0" * 64}]},
-            "nao_listado": {**base, "count": 1, "files": [{"name": "a1.json", "sha256": h(a1)}]},
-            "hash": {**base, "count": 2, "files": [{"name": "a1.json", "sha256": "f" * 64}, {"name": "a2.json", "sha256": h(a2)}]},
+            "contagem": {**base, "count": 5, "files": [{"name": "a1.json", "sha256": h(a1), "bytes": n(a1)}, {"name": "a2.json", "sha256": h(a2), "bytes": n(a2)}]},
+            "listado_ausente": {**base, "count": 3, "files": [{"name": "a1.json", "sha256": h(a1), "bytes": n(a1)}, {"name": "a2.json", "sha256": h(a2), "bytes": n(a2)},
+                                                              {"name": "a3.json", "sha256": "0" * 64, "bytes": 10}]},
+            "nao_listado": {**base, "count": 1, "files": [{"name": "a1.json", "sha256": h(a1), "bytes": n(a1)}]},
+            "hash": {**base, "count": 2, "files": [{"name": "a1.json", "sha256": "f" * 64, "bytes": n(a1)}, {"name": "a2.json", "sha256": h(a2), "bytes": n(a2)}]},
         }
         for nome, m in casos.items():
             lote_a(self, manifesto=m)

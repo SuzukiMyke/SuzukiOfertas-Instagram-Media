@@ -121,3 +121,16 @@ python3 -m produtos --contrato 1.1 --dados produtos/exemplos_ficticios_v1_1/expo
 apenas **recomenda**. O `resumo.json` registra o contrato aplicado, o estado de cada lote e os commits informados (`--commit-dados`, `--commit-decisoes`, `--commit-fotos`).
 
 Exemplos fictícios do 1.1: `exemplos_ficticios_v1_1/` (imagem sintética de ruído; nenhum dado real).
+
+### Etapa 5.12 — correções do receptor 1.1 (P-01 a P-04)
+
+Ainda **somente dados fictícios**; modo 1.0 intacto (hashes golden idênticos).
+
+| Item | O que mudou (modo 1.1 apenas) |
+|---|---|
+| P-01 | `manifesto_v11.py`: manifesto **estrito** — `manifestVersion` (1.x), `generatedAt` (UTC, não futuro), `count`, `files[{name, sha256, bytes}]`; nenhum campo desconhecido; nomes simples e únicos; até 1000 itens; `bytes` ≤ 256 KiB. `leitor_v11` confere também `count` × arquivos presentes, `sha256` e `bytes`. Qualquer falha → **lote inteiro em quarentena**, sem tocar nos arquivos. |
+| P-02 | `selecao_contrato.py` + `--dados-reais`/`--legado`: com `--dados-reais`, `--contrato` é obrigatório (sem padrão) e `1.0` exige `--legado`. O processamento de dados reais continua **desabilitado** (`DADOS_REAIS_HABILITADO = False`; o CLI sai com código 3 sem ler nada). Sem `--dados-reais` o CLI 1.0 é exatamente o de antes. |
+| P-03 | `conflitos_v11.py`: A só prevalece no comercial com verificação válida; A expirada → ficha sustentada por B (`candidato_nao_verificado`, sem alegação comercial) com `fonteComercial` visível; B fornece dados editoriais (`editorialB`); divergência de título/loja/URL/características → `pendente_revisao` com os campos (`divergenciasAB`); nenhuma fonte substitui decisão humana ou permissão de foto. |
+| P-04 | Toda decisão humana não aplicada entra em `decisoesInaplicaveis` (ficha, avisos e `resumo.json`) com código e motivo; decisões sobre produto ausente das fontes lidas aparecem em `decisoesSemProduto`. Nada é aprovado automaticamente. |
+
+Não há campo de "modelo" no formato exportado: a comparação A × B usa título, loja, URL oficial e conjunto de `verifiedFacts`.

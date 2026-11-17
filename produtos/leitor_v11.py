@@ -2,8 +2,8 @@
 
 Cada pasta de exportação (``A/`` e ``B/``) é um **lote independente** e exige o **seu próprio** ``manifest.json``
 (o leitor lê uma pasta por vez, sem recursão). Regras (somente leitura, sem rede):
-- sem manifesto, manifesto ilegível/inválido, contagem divergente, arquivo listado ausente, arquivo não listado,
-  hash divergente, arquivo grande demais ou manifesto simbólico -> o **lote inteiro** vai para a quarentena
+- sem manifesto, manifesto ilegível, fora do formato estrito (``manifesto_v11``: manifestVersion, generatedAt, count, files[name, sha256, bytes]), contagem divergente, arquivo listado ausente, arquivo não listado,
+  hash ou bytes divergentes, arquivo grande demais ou manifesto simbólico -> o **lote inteiro** vai para a quarentena
   (nenhum arquivo do lote é usado): gravação possivelmente incompleta (S4);
 - lote íntegro: cada arquivo é validado como no modo 1.0; ``A/`` só aceita fonte A e ``B/`` só aceita fonte B
   (arquivo na pasta errada -> quarentena do arquivo);
@@ -18,8 +18,8 @@ from datetime import datetime
 from pathlib import Path
 
 from .esquema import FONTE_A, FONTES_B, validar_produto
-from .leitor import (MANIFESTO, TAMANHO_MAX, Leitura, Lido, Rejeitado, _candidato, _ler_manifesto,
-                     decodificar_json)
+from .leitor import MANIFESTO, TAMANHO_MAX, Leitura, Lido, Rejeitado, _candidato, decodificar_json
+from .manifesto_v11 import ler_manifesto_estrito
 
 LETRAS = ("A", "B")
 
@@ -77,16 +77,14 @@ def ler_lote(pasta: Path | str, agora: datetime, letra: str, *, tolerancia_futur
         return lote
     if mpath.is_symlink() or not lote.manifesto_presente:
         return quarentena(["manifest.json ausente (obrigatório no modo 1.1 para cada pasta de exportação)"])
-    manifesto, motivo = _ler_manifesto(mpath)
+    manifesto, motivos_m = ler_manifesto_estrito(mpath, agora, tolerancia_futuro_min=tolerancia_futuro_min)
     if manifesto is None:
-        return quarentena([motivo])
+        return quarentena(["manifesto fora do formato do contrato 1.1: " + m for m in motivos_m])
     lote.leitura.manifesto_presente = True
-    mapa, nomes = manifesto["mapa"], {p.name for p in arquivos}
+    mapa, nomes = manifesto.itens, {p.name for p in arquivos}
     problemas: list[str] = []
-    if manifesto["count"] != len(mapa):
-        problemas.append("manifesto: contagem diverge da lista de arquivos")
-    if manifesto["count"] != len(arquivos):
-        problemas.append("manifesto: contagem diverge dos arquivos presentes na pasta")
+    if manifesto.count != len(arquivos):
+        problemas.append("manifesto: count diverge dos arquivos presentes na pasta")
     for n in sorted(set(mapa) - nomes):
         problemas.append(f"arquivo listado no manifesto não encontrado: {n[:80]}")
     for n in sorted(nomes - set(mapa)):
@@ -97,8 +95,11 @@ def ler_lote(pasta: Path | str, agora: datetime, letra: str, *, tolerancia_futur
             problemas.append(f"arquivo maior que {TAMANHO_MAX} bytes: {p.name[:80]}")
             continue
         conteudos[p.name] = p.read_bytes()
-        if p.name in mapa and hashlib.sha256(conteudos[p.name]).hexdigest() != mapa[p.name]:
-            problemas.append(f"SHA-256 diverge do manifesto: {p.name[:80]}")
+        if p.name in mapa:
+            if len(conteudos[p.name]) != mapa[p.name]["bytes"]:
+                problemas.append(f"bytes diverge do manifesto: {p.name[:80]}")
+            if hashlib.sha256(conteudos[p.name]).hexdigest() != mapa[p.name]["sha256"]:
+                problemas.append(f"SHA-256 diverge do manifesto: {p.name[:80]}")
     if problemas:
         return quarentena(problemas)
 

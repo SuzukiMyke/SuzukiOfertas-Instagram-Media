@@ -57,6 +57,12 @@ class AvaliacaoV11(Avaliacao):
     fatos_para_uso: list[dict] = field(default_factory=list)
     fatos_em_revisao: list[dict] = field(default_factory=list)
     foto: dict = field(default_factory=dict)
+    # --- política A × B (contrato §16.3) e registro explícito de decisões inaplicáveis (P-03, P-04)
+    fonte_selecionada: str = ""                      # "A" | "B": versão que sustenta a ficha
+    divergencias_ab: dict | None = None
+    fonte_comercial: dict | None = None              # resumo da fonte A quando ela existe (mesmo expirada)
+    editorial_b: dict | None = None                  # dados editoriais de B ao lado de A
+    decisoes_inaplicaveis: list[dict] = field(default_factory=list)
 
 
 def origem(dados: dict) -> str:
@@ -139,17 +145,17 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
     ultima = decisoes[-1]
     ids = [v.export_id for v in produto.versoes]
 
-    def ignorar(porque):
-        av.decisoes_ignoradas.append({**ultima.como_dict(), "ignoradaPorque": porque})
+    def ignorar(porque, codigo):
+        av.decisoes_ignoradas.append({**ultima.como_dict(), "ignoradaPorque": porque, "codigo": codigo})
         return av
 
     if ultima.export_id not in ids:
-        return ignorar("exportId não pertence às versões conhecidas do produto")
+        return ignorar("exportId não pertence às versões conhecidas do produto", "versao_desconhecida")
     idx = ids.index(ultima.export_id)
     if ultima.data > agora:
-        return ignorar("data da decisão no futuro")
+        return ignorar("data da decisão no futuro", "data_futura")
     if ultima.data < produto.versoes[idx].exportada_em:
-        return ignorar("decisão anterior à exportação revisada")
+        return ignorar("decisão anterior à exportação revisada", "anterior_a_exportacao")
     if ultima.decisao == estados.REJEITADO:
         _aplicar(av, ultima, estados.REJEITADO, "rejeitada por decisão humana")
         return av
@@ -160,18 +166,18 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
         av.aprovacao_invalidada_por_identidade = True
         av.eventos.append({"em": _fmt(agora), "de": ultima.decisao, "para": auto, "origem": "automatico",
                            "motivo": "aprovação invalidada por mudança de identidade (title, store ou officialUrl)"})
-        return ignorar("identidade do produto mudou depois da aprovação; nova revisão necessária")
+        return ignorar("identidade do produto mudou depois da aprovação; nova revisão necessária", "identidade_mudou")
     if orig == "A" and any(v.centavos != revisada.centavos or v.dados["price"]["currency"] != revisada.dados["price"]["currency"]
                            for v in ate_aqui):
         av.aprovacao_invalidada_por_preco = True
         av.eventos.append({"em": _fmt(agora), "de": ultima.decisao, "para": auto, "origem": "automatico",
                            "motivo": "aprovação invalidada por mudança de preço"})
-        return ignorar("preço mudou depois da aprovação; nova revisão necessária")
+        return ignorar("preço mudou depois da aprovação; nova revisão necessária", "preco_mudou")
     permitido = estados.PENDENTE_REVISAO if orig == "A" else estados.CANDIDATO_NAO_VERIFICADO
     if auto != permitido:
-        return ignorar(f"estado automático '{auto}' não permite aprovação")
+        return ignorar(f"estado automático '{auto}' não permite aprovação", "estado_nao_permite")
     if orig == "B" and ultima.decisao == estados.APROVADO_PUBLICACAO:
-        return ignorar("fonte B nunca é aprovada para publicação (somente rascunho editorial)")
+        return ignorar("fonte B nunca é aprovada para publicação (somente rascunho editorial)", "fonte_b_sem_publicacao")
     _aplicar(av, ultima, ultima.decisao, "aprovação humana registrada")
     return av
 
