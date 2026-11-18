@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from .esquema import FONTE_A, FONTES_B, validar_produto
+from .esquema import FONTE_A, FONTE_CURADORIA, FONTES_B, validar_produto
 from .leitor import MANIFESTO, TAMANHO_MAX, Leitura, Lido, Rejeitado, _candidato, decodificar_json
 from .manifesto_v11 import ler_manifesto_estrito
 
@@ -111,14 +111,14 @@ def ler_lote(pasta: Path | str, agora: datetime, letra: str, *, tolerancia_futur
         except ValueError as e:
             lote.leitura.rejeitados.append(Rejeitado(p.name, sha, "quarentena", [str(e)]))
             continue
-        res = validar_produto(obj, agora, tolerancia_futuro_min=tolerancia_futuro_min)
+        res = validar_produto(obj, agora, tolerancia_futuro_min=tolerancia_futuro_min, contrato="1.1")
         if not res.ok:
             lote.leitura.rejeitados.append(Rejeitado(p.name, sha, res.destino, res.erros, res.faltantes))
             continue
         kind = res.dados["source"]["kind"]
-        if (letra == "A") != (kind == FONTE_A) or (letra == "B" and kind not in FONTES_B):
+        if (letra == "A") != (kind == FONTE_A) or (letra == "B" and kind not in FONTES_B + (FONTE_CURADORIA,)):
             lote.leitura.rejeitados.append(Rejeitado(
-                p.name, sha, "quarentena", [f"fonte '{kind}' não pertence à pasta {letra}/ (A só aceita agente_publicada)"]))
+                p.name, sha, "quarentena", [f"fonte '{kind}' não pertence à pasta {letra}/ (A só aceita agente_publicada; a curadoria manual só entra em B/)"]))
             continue
         lote.leitura.lidos.append(Lido(p.name, sha, res.dados))
     return lote

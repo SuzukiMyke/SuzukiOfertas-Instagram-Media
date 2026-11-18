@@ -19,7 +19,13 @@ AVISO_PRECO_VIDEO = "Preço fora do vídeo; se citado, apenas na legenda, com o 
 _MD_ESPECIAIS = re.compile(r"([\\`*_{}\[\]<>()#+!|~])")
 
 
-def reais(centavos: int) -> str:
+SEM_PRECO = "sem preço verificado"
+
+
+def reais(centavos: int | None) -> str:
+    """``R$ 1.234,56``; ``None`` (só curadoria manual, contrato 1.1) vira "sem preço verificado". Para preço inteiro a saída é a de sempre."""
+    if centavos is None:
+        return SEM_PRECO
     inteiro, frac = divmod(centavos, 100)
     return f"R$ {inteiro:,}".replace(",", ".") + f",{frac:02d}"
 

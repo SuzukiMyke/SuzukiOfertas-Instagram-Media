@@ -16,14 +16,21 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from urllib.parse import parse_qsl, urlsplit
 
+from . import curadoria_regras_v11 as cur
 from .tempo import parse_data
 
 MAJOR_SUPORTADA = 1
 SISTEMA_AGENTE = "SuzukiOfertas-AgenteAutomatico"
+SISTEMA_CURADORIA = "SuzukiOfertas-Instagram-Curadoria"        # só contrato 1.1
+PROVIDER_CURADORIA = "CURADORIA"                                # reservado exclusivamente à curadoria manual
+BLOCK_REASON_CURADORIA = "curadoria_manual_sem_verificacao_comercial"   # 42 caracteres: o detector de "sequência opaca" a recusaria
+FONTE_CURADORIA = "curadoria_manual"                            # só contrato 1.1; só em B/
+CONTRATOS = ("1.0", "1.1")
 
 FONTE_A = "agente_publicada"
 FONTES_B = ("catalogo_candidato", "api_candidato")
-FONTES = (FONTE_A,) + FONTES_B
+FONTES = (FONTE_A,) + FONTES_B                    # contrato 1.0 (inalterado)
+FONTES_V11 = FONTES + (FONTE_CURADORIA,)          # contrato 1.1
 
 VERIFICACOES = ("ao_vivo", "catalogo_sem_verificacao", "desconhecida")
 DISPONIBILIDADES = ("in_stock", "unknown", "out_of_stock")
@@ -261,8 +268,23 @@ def _inteiro_positivo(ctx: _Ctx, caminho: str, v, *, nulo_ok=False):
     return v
 
 
-def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> Resultado:
-    """Valida um objeto já decodificado do JSON. Não levanta exceção para entradas inválidas."""
+def _host_curadoria(ctx: _Ctx, caminho: str, url) -> None:
+    """Encurtadores e origens de procedência não verificável (pelo NOME do host; sem rede nem redirecionamentos)."""
+    if not isinstance(url, str):
+        return
+    motivo = cur.host_nao_verificavel(urlsplit(url).hostname or "")
+    if motivo:
+        ctx.erro(caminho, f"URL de curadoria rejeitada: {motivo}")
+
+
+def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5, contrato: str = "1.0") -> Resultado:
+    """Valida um objeto já decodificado do JSON. Não levanta exceção para entradas inválidas.
+
+    ``contrato="1.0"`` (padrão) é o comportamento de sempre: rejeita a fonte ``curadoria_manual``, o preço nulo e o sistema de
+    origem da curadoria. ``contrato="1.1"`` (só ``leitor_v11``) aceita a curadoria manual, e só ela, com preço nulo."""
+    if contrato not in CONTRATOS:
+        raise ValueError(f"contrato desconhecido: use {' ou '.join(CONTRATOS)}")
+    v11 = contrato == "1.1"
     ctx = _Ctx(agora, timedelta(minutes=tolerancia_futuro_min))
     res = Resultado()
 
@@ -300,11 +322,14 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
     kind = None
     if src is not None:
         _obrigatorios(ctx, "source", src, OBRIGATORIOS["source"])
-        kind = _enum(ctx, "source.kind", src.get("kind"), FONTES) if "kind" in src else None
-        if "system" in src and src["system"] != SISTEMA_AGENTE:
-            ctx.erro("source.system", "sistema de origem não reconhecido pelo contrato")
+        kind = _enum(ctx, "source.kind", src.get("kind"), FONTES_V11 if v11 else FONTES) if "kind" in src else None
+        sistema_esperado = SISTEMA_CURADORIA if kind == FONTE_CURADORIA else SISTEMA_AGENTE
+        if "system" in src and src["system"] != sistema_esperado:
+            ctx.erro("source.system", "sistema de origem não reconhecido pelo contrato"
+                     if kind != FONTE_CURADORIA else "curadoria manual exige o sistema de origem da curadoria")
+    eh_cur = kind == FONTE_CURADORIA                   # só existe no contrato 1.1 (``_enum`` recusa antes)
     eh_a = kind == FONTE_A
-    eh_b = kind in FONTES_B
+    eh_b = kind in FONTES_B or eh_cur                  # a curadoria manual é uma fonte do tipo B
 
     # --- product
     prod = _objeto(ctx, "product", obj.get("product"), CAMPOS["product"]) if "product" in obj else None
@@ -319,6 +344,11 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
         if "provider" in prod and not (isinstance(prov, str) and _PROVIDER.match(prov)):
             ctx.erro("product.provider", "provedor inválido (use MAIÚSCULAS, dígitos e '_')")
             prov = None
+        if isinstance(prov, str):                      # reserva exclusiva (vale também no contrato 1.0)
+            if eh_cur and prov != PROVIDER_CURADORIA:
+                ctx.erro("product.provider", "curadoria manual exige o provedor reservado da curadoria")
+            elif not eh_cur and prov == PROVIDER_CURADORIA:
+                ctx.erro("product.provider", "provedor reservado exclusivamente à curadoria manual")
         dados_prod = {
             "id": pid, "provider": prov,
             "store": _txt(ctx, "product.store", prod.get("store"), max_len=120),
@@ -355,9 +385,16 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
         valida = _data(ctx, "price.validUntil", price.get("validUntil"), futuro_ok=True)
         verif = _enum(ctx, "price.verification", price.get("verification"), VERIFICACOES) \
             if "verification" in price else None
+        preco_nulo = eh_cur and "amountCents" in price and price["amountCents"] is None   # nulo SÓ para curadoria manual (1.1)
+        if preco_nulo:
+            for campo in ("originalAmountCents", "verifiedAt", "validUntil"):
+                if price.get(campo) is not None:
+                    ctx.erro(f"price.{campo}", "com preço nulo este campo deve ser nulo")
+            if verif is not None and verif != "desconhecida":
+                ctx.erro("price.verification", "com preço nulo a verificação deve ser 'desconhecida'")
         dados_price = {
-            "amountCents": _inteiro_positivo(ctx, "price.amountCents", price.get("amountCents"))
-            if "amountCents" in price else None,
+            "amountCents": None if preco_nulo else (_inteiro_positivo(ctx, "price.amountCents", price.get("amountCents"))
+                                                     if "amountCents" in price else None),
             "currency": price.get("currency"),
             "originalAmountCents": _inteiro_positivo(ctx, "price.originalAmountCents",
                                                     price.get("originalAmountCents"), nulo_ok=True),
@@ -378,6 +415,8 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
 
     # --- availability
     disp = _enum(ctx, "availability", obj.get("availability"), DISPONIBILIDADES) if "availability" in obj else None
+    if eh_cur and disp is not None and disp != "unknown":
+        ctx.erro("availability", "curadoria manual exige availability = unknown")
 
     # --- photo
     dados_foto = {"url": None, "origin": "desconhecida", "usePermission": "pendente",
@@ -421,13 +460,21 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
                 continue
             _obrigatorios(ctx, c, fo, CAMPOS["fact"])
             ref = fo.get("sourceRef")
-            if isinstance(ref, str) and ref.lower().startswith("https://"):
+            if eh_cur:                                  # curadoria: origem do fato = URL HTTPS verificável pelo nome (sem rede)
+                ref = _url(ctx, f"{c}.sourceRef", ref, rastreio_proibido=True)
+                _host_curadoria(ctx, f"{c}.sourceRef", ref)
+            elif isinstance(ref, str) and ref.lower().startswith("https://"):
                 ref = _url(ctx, f"{c}.sourceRef", ref, rastreio_proibido=True)
             else:
                 ref = _txt(ctx, f"{c}.sourceRef", ref, max_len=300)
             _data(ctx, f"{c}.verifiedAt", fo.get("verifiedAt"), nulo_ok=False)
-            fatos.append({"text": _txt(ctx, f"{c}.text", fo.get("text"), max_len=500),
-                          "sourceRef": ref, "verifiedAt": fo.get("verifiedAt")})
+            texto_fato = _txt(ctx, f"{c}.text", fo.get("text"), max_len=500)
+            if eh_cur and texto_fato is not None:
+                er, av = cur.avaliar_fato_curadoria(texto_fato)
+                for m in er:
+                    ctx.erro(f"{c}.text", m)
+                ctx.avisos += [f"{c}.text: {m}" for m in av]
+            fatos.append({"text": texto_fato, "sourceRef": ref, "verifiedAt": fo.get("verifiedAt")})
 
     # --- publication
     pub = _objeto(ctx, "publication", obj.get("publication"), CAMPOS["publication"]) if "publication" in obj else None
@@ -466,8 +513,10 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
             if ro is None:
                 continue
             _obrigatorios(ctx, c, ro, CAMPOS["reference"])
-            refs.append({"label": _txt(ctx, f"{c}.label", ro.get("label"), max_len=120),
-                         "url": _url(ctx, f"{c}.url", ro.get("url"), rastreio_proibido=True)})
+            url_ref = _url(ctx, f"{c}.url", ro.get("url"), rastreio_proibido=True)
+            if eh_cur:
+                _host_curadoria(ctx, f"{c}.url", url_ref)
+            refs.append({"label": _txt(ctx, f"{c}.label", ro.get("label"), max_len=120), "url": url_ref})
 
     # --- eligibility
     el = _objeto(ctx, "eligibility", obj.get("eligibility"), CAMPOS["eligibility"]) if "eligibility" in obj else None
@@ -479,8 +528,24 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
             ctx.erro("eligibility.agentPublicationEligible", "esperado true/false")
         if eh_b and flag is not False and "agentPublicationEligible" in el:
             ctx.erro("eligibility.agentPublicationEligible", "fonte B nunca pode ser elegível (deve ser false)")
-        dados_el = {"agentPublicationEligible": flag,
-                    "blockReason": _txt(ctx, "eligibility.blockReason", el.get("blockReason"), max_len=200)}
+        if eh_cur:                                       # valor fixo conhecido: comparação exata, sem relaxar o detector de segredos
+            motivo_bloqueio = el.get("blockReason")
+            if motivo_bloqueio != BLOCK_REASON_CURADORIA:
+                ctx.erro("eligibility.blockReason", "curadoria manual exige o motivo de bloqueio padrão da curadoria")
+                motivo_bloqueio = None
+        else:
+            motivo_bloqueio = _txt(ctx, "eligibility.blockReason", el.get("blockReason"), max_len=200)
+        dados_el = {"agentPublicationEligible": flag, "blockReason": motivo_bloqueio}
+
+    if eh_cur:                                          # regras adicionais da curadoria manual (contrato 1.1)
+        _host_curadoria(ctx, "product.officialUrl", dados_prod.get("officialUrl"))
+        if dados_prod.get("title"):
+            er, av = cur.avaliar_titulo_curadoria(dados_prod["title"])
+            for m in er:
+                ctx.erro("product.title", m)
+            ctx.avisos += [f"product.title: {m}" for m in av]
+        if len(fatos) == 0:
+            ctx.avisos.append("curadoria sem fatos verificados: nenhuma característica poderá ser usada")
 
     if disp == "unknown":
         ctx.avisos.append("disponibilidade desconhecida")
@@ -490,7 +555,7 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5) -> 
 
     res.dados = {
         "schemaVersion": sv, "exportId": obj["exportId"], "exportedAt": obj["exportedAt"],
-        "source": {"kind": kind, "system": SISTEMA_AGENTE},
+        "source": {"kind": kind, "system": SISTEMA_CURADORIA if eh_cur else SISTEMA_AGENTE},
         "product": dados_prod, "price": dados_price, "availability": disp, "photo": dados_foto,
         "verifiedFacts": fatos,
         "publication": dados_pub, "references": refs, "eligibility": dados_el,

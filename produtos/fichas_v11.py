@@ -11,6 +11,8 @@ from .politica_titulos import identificacao_para_peca
 from .registro import Produto
 
 AVISO_B_PRECO = "Origem B: o preço é referência NÃO verificada; não aparece em conteúdo, legenda ou vídeo."
+AVISO_SEM_PRECO = ("Curadoria manual: sem preço verificado; nenhum preço, desconto, estoque, frete ou urgência pode ser usado "
+                   "em conteúdo, legenda ou vídeo.")
 AVISO_SEM_VERIFICACAO = ("Não há verificação do preço no momento da publicação (capacidade reservada, inexistente): "
                          "vale apenas a janela declarada no arquivo exportado.")
 
@@ -41,9 +43,10 @@ def montar_v11(produto: Produto, av: AvaliacaoV11, agora: datetime) -> dict:
     if v1_b in f["avisos"]:
         f["avisos"][f["avisos"].index(v1_b)] = ("Origem B: candidato de catálogo/API, sem verificação ao vivo e não publicado "
                                                 "pelo agente; só rascunho editorial (nunca publicação).")
+    sem_preco = f["preco"]["amountCents"] is None          # curadoria manual (preço nulo)
     if av.origem == "B":
         f["preco"]["exibicao"] = None
-        f["avisos"].append(AVISO_B_PRECO)
+        f["avisos"].append(AVISO_SEM_PRECO if sem_preco else AVISO_B_PRECO)
         f["alegacaoComercialPermitida"] = False
     elif av.fonte_comercial and av.fonte_comercial["alegacaoComercialPermitida"] is False:
         f["alegacaoComercialPermitida"] = False
@@ -86,7 +89,8 @@ def para_markdown_v11(f: dict) -> str:
     c = copy.deepcopy(f)
     c["foto"]["usePermission"] = f"{c['foto']['usePermission']} (informativo; não concede uso)"
     if c["preco"]["exibicao"] is None:
-        c["preco"]["exibicao"] = "(referência NÃO verificada; não usar em conteúdo)"
+        c["preco"]["exibicao"] = ("sem preço verificado" if c["preco"]["amountCents"] is None
+                                  else "(referência NÃO verificada; não usar em conteúdo)")
     corpo = fichas.para_markdown(c)
     extra = ["", "## Contrato 1.1",
              f"- Aviso de título: `{f['avisoTitulo']}`" + (f" (trechos: {', '.join(f['trechosTitulo'])})" if f["trechosTitulo"] else ""),

@@ -30,7 +30,7 @@ class Versao:
         return p["provider"], p["id"]
 
     @property
-    def centavos(self) -> int:
+    def centavos(self) -> int | None:           # None só na curadoria manual (preço nulo, contrato 1.1)
         return self.dados["price"]["amountCents"]
 
     def resumo(self, situacao: str) -> dict:

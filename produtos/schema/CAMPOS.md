@@ -55,3 +55,18 @@ lista de permissão, qualquer um deles (ou qualquer campo desconhecido) rejeita 
   manifesto presente, arquivo **não listado** vai para quarentena (pode estar sendo gravado) e manifesto inválido
   põe todos os arquivos em quarentena (falha segura).
 - **`source.system`** deve ser exatamente `SuzukiOfertas-AgenteAutomatico` (constante do contrato).
+
+## Curadoria manual (contrato 1.1; Etapa 5.14-B1)
+
+Só existe com `validar_produto(..., contrato="1.1")`; o modo 1.0 continua recusando tudo abaixo. `schemaVersion` permanece `1.0.x` e nenhum campo novo foi acrescentado ao formato externo.
+
+| Campo | Curadoria manual (`curadoria_manual`), somente em `B/` |
+|---|---|
+| `source.kind` / `source.system` | `curadoria_manual` / `SuzukiOfertas-Instagram-Curadoria` |
+| `product.provider` | `CURADORIA` (reservado: recusado nas demais fontes) |
+| `product.affiliateUrl` | `null` |
+| `price` | `{"amountCents": null, "currency": "BRL", "originalAmountCents": null, "verifiedAt": null, "validUntil": null, "verification": "desconhecida"}`; preço não nulo, se vier, segue as regras de B |
+| `availability` | `unknown` |
+| `verifiedFacts[].sourceRef` | URL HTTPS (sem rastreio/sessão; encurtadores e IPs recusados); `verifiedAt` obrigatório e não futuro; até 20 fatos |
+| `publication.state` / `eligibility` | `nao_publicada` / `false`, `blockReason = curadoria_manual_sem_verificacao_comercial` |
+| `product.title`, fatos | sem alegação comercial; título de risco ALTA recusado; MÉDIA gera aviso |

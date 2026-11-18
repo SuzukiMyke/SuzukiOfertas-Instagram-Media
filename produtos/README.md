@@ -164,3 +164,13 @@ O contrato do gerador não foi alterado; a compatibilidade é provada nos testes
 - **Divergências A × B por valor**: o campo divergente passa a valer com o par de valores normalizado (NFKC, espaços, caixa, URL sem formatação). Mesmo campo com valor materialmente diferente = `valor_alterado`; campo
   novo = `novo`; igual ou redução continua válido. Preço e disponibilidade não entram na divergência (seguem o portão comercial).
 - **Carrossel**: ficha em estado inelegível devolve relatório `status: "bloqueado"` (`estado_inelegivel`), sem exceção; `CarrosselRecusado` só para chamada inválida.
+
+### Etapa 5.14-B1 (commit 1) — curadoria manual no contrato 1.1
+
+Nova fonte do tipo B, **só no contrato 1.1** (`validar_produto(..., contrato="1.1")`, usado apenas por `leitor_v11`; o padrão `"1.0"` não mudou): `source.kind = curadoria_manual`,
+`source.system = SuzukiOfertas-Instagram-Curadoria` e `product.provider = CURADORIA` (os três obrigatórios juntos; o provedor `CURADORIA` é reservado e recusado para qualquer fonte do agente). Entra só em `B/`.
+**Preço nulo** (`amountCents: null`, moeda BRL, `originalAmountCents`/`verifiedAt`/`validUntil` nulos, `verification: desconhecida`) é aceito exclusivamente na curadoria, que exige `availability = unknown`, `affiliateUrl` nulo,
+`publication.state = nao_publicada`, `agentPublicationEligible = false` e `blockReason = curadoria_manual_sem_verificacao_comercial` (valor exato; o detector de "sequência opaca" o recusaria, então é comparado literalmente).
+`sourceRef` de cada fato = URL HTTPS (sem rede; encurtadores e origens de procedência não verificável são recusados por **nome do host**, em `curadoria_regras_v11.py`); URL válida **não** prova veracidade.
+Título de risco ALTA e alegações comerciais (preço, desconto/promoção/oferta, frete grátis, estoque/disponibilidade, urgência, menor preço, % promocional) em título ou fato são rejeitados; risco MÉDIA só avisa.
+Fichas sem preço mostram "sem preço verificado". Ficha continua `candidato_nao_verificado`; publicação nunca é autorizada. Limitações: heurística textual (falsos positivos/negativos), lista finita de encurtadores.
