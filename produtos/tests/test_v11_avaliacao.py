@@ -136,9 +136,11 @@ class DecisoesHumanasTest(BaseV11):
         h = self.humanos(decisoes=[self.decisao(1, "A001", "rejeitado")])
         self.assertEqual(self.rodar(a={"a.json": a_com()}, humanos=h)[1]["EXEMPLO_A__A001"]["estado"], estados.REJEITADO)
 
-    def test_mudanca_de_preco_invalida_aprovacao_de_a(self):
+    def test_mudanca_de_preco_invalida_aprovacao_de_publicacao_de_a(self):
+        # P-08 (alteração intencional): preço só é material para aprovado_para_publicacao; a aprovação EDITORIAL (rascunho)
+        # sobrevive a mudança de preço (ver test_v11_p08). O teste antigo usava rascunho.
         a = {"a1.json": a_com(1), "a2.json": a_com(2, exportedAt="2026-11-17T14:00:00Z", price__amountCents=9990)}
-        h = self.humanos(decisoes=[self.decisao(1, "A001")])
+        h = self.humanos(decisoes=[self.decisao(1, "A001", "aprovado_para_publicacao")])
         f = self.rodar(a=a, humanos=h)[1]["EXEMPLO_A__A001"]
         self.assertEqual(f["estado"], estados.PENDENTE_REVISAO)
         self.assertTrue(f["aprovacaoInvalidadaPorPreco"])

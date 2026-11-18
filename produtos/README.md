@@ -134,3 +134,13 @@ Ainda **somente dados fictícios**; modo 1.0 intacto (hashes golden idênticos).
 | P-04 | Toda decisão humana não aplicada entra em `decisoesInaplicaveis` (ficha, avisos e `resumo.json`) com código e motivo; decisões sobre produto ausente das fontes lidas aparecem em `decisoesSemProduto`. Nada é aprovado automaticamente. |
 
 Não há campo de "modelo" no formato exportado: a comparação A × B usa título, loja, URL oficial e conjunto de `verifiedFacts`.
+
+### Etapa 5.14-A (commit 1) — P-08: invalidação seletiva de aprovações
+
+`impressao_v11.py`: uma aprovação humana **não** é invalidada por nova exportação sem alteração material. Compara-se a versão revisada
+(a do `exportId` da decisão) com a vigente da mesma fonte, por tipo de decisão: rascunho = identidade, fonte, fatos, fonte de comprovação;
+publicação = isso + preço (`amountCents`, `currency`, `originalAmountCents`) e disponibilidade. A divergência A × B só invalida se surgir campo
+novo divergente. Ficam fora: `exportId`, `exportedAt`, `verifiedAt`, `validUntil`, `checkedAt`. Códigos em `decisoesInaplicaveis`: `identidade_mudou`,
+`fonte_mudou`, `fatos_mudaram`, `fonte_comprovacao_mudou`, `preco_mudou`, `disponibilidade_mudou`, `divergencia_ab_alterada` (com `codigos` e
+`campos`). `decisoes.json` não muda; a impressão é recalculada na leitura (versão revisada ausente → `versao_desconhecida`, conservador e registrado).
+Aprovação editorial **não** é validade comercial: a janela de 24 h e o portão de pré-publicação seguem valendo.

@@ -16,7 +16,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from . import estados
+from . import estados, impressao_v11 as imp
 from .avaliacao import Avaliacao, _fmt
 from .decisoes import Decisao
 from .esquema import FONTE_A
@@ -63,6 +63,9 @@ class AvaliacaoV11(Avaliacao):
     fonte_comercial: dict | None = None              # resumo da fonte A quando ela existe (mesmo expirada)
     editorial_b: dict | None = None                  # dados editoriais de B ao lado de A
     decisoes_inaplicaveis: list[dict] = field(default_factory=list)
+    # --- P-08: invalidação seletiva por impressão digital material
+    invalidacoes_materiais: list[dict] = field(default_factory=list)   # [{"codigo","componente","campos"}] da decisão avaliada
+    impressao_decisao: dict | None = None                               # transparência: o que foi comparado
 
 
 def origem(dados: dict) -> str:
@@ -121,7 +124,7 @@ def classificar_fatos(vigente: Versao, anterior: Versao | None, identidade_mudou
 
 
 def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg: ConfiguracaoV11,
-                foto: dict) -> AvaliacaoV11:
+                foto: dict, outra: Produto | None = None) -> AvaliacaoV11:
     vigente = produto.vigente
     orig = origem(vigente.dados)
     auto, motivo, pend = estado_automatico_v11(vigente.dados, agora, cfg, bool(foto.get("utilizavel")))
@@ -145,12 +148,13 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
     ultima = decisoes[-1]
     ids = [v.export_id for v in produto.versoes]
 
-    def ignorar(porque, codigo):
-        av.decisoes_ignoradas.append({**ultima.como_dict(), "ignoradaPorque": porque, "codigo": codigo})
+    def ignorar(porque, codigo, **extra):
+        av.decisoes_ignoradas.append({**ultima.como_dict(), "ignoradaPorque": porque, "codigo": codigo, **extra})
         return av
 
     if ultima.export_id not in ids:
-        return ignorar("exportId não pertence às versões conhecidas do produto", "versao_desconhecida")
+        return ignorar("exportId não pertence às versões conhecidas do produto; sem a versão revisada não há impressão digital "
+                       "material comparável (decisão tratada de forma conservadora: nova revisão necessária)", "versao_desconhecida")
     idx = ids.index(ultima.export_id)
     if ultima.data > agora:
         return ignorar("data da decisão no futuro", "data_futura")
@@ -160,26 +164,53 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
         _aplicar(av, ultima, estados.REJEITADO, "rejeitada por decisão humana")
         return av
 
+    if orig == "B" and ultima.decisao == estados.APROVADO_PUBLICACAO:
+        return ignorar("fonte B nunca é aprovada para publicação (somente rascunho editorial)", "fonte_b_sem_publicacao")
+
+    # --- P-08: a aprovação só é invalidada por mudança MATERIAL entre a versão revisada e a vigente (da mesma fonte)
     revisada = produto.versoes[idx]
-    ate_aqui = produto.versoes[:idx + 1]
-    if any(_identidade(v) != _identidade(revisada) for v in ate_aqui):
-        av.aprovacao_invalidada_por_identidade = True
+    difs = imp.diferencas(revisada, vigente, ultima.decisao)
+    div_rev, div_atual, novas = _divergencia(produto, revisada, ultima, outra)
+    av.impressao_decisao = {
+        "tipoDecisao": ultima.decisao, "versaoRevisada": revisada.export_id, "versaoVigente": vigente.export_id,
+        "impressaoVersao": imp.IMPRESSAO_VERSAO,
+        "componentes": list(imp.componentes_do_tipo(ultima.decisao)),
+        "impressaoRevisada": imp.impressao(revisada, ultima.decisao), "impressaoAtual": imp.impressao(vigente, ultima.decisao),
+        "divergenciasNaRevisao": div_rev, "divergenciasAtuais": div_atual,
+    }
+    if novas:
+        difs.append({"codigo": "divergencia_ab_alterada", "componente": "divergencia_ab", "campos": novas})
+    if difs:
+        av.invalidacoes_materiais = difs
+        codigos = [x["codigo"] for x in difs]
+        av.aprovacao_invalidada_por_identidade = "identidade_mudou" in codigos
+        av.aprovacao_invalidada_por_preco = "preco_mudou" in codigos
+        resumo = "; ".join(f"{x['codigo']} ({', '.join(x['campos'])})" for x in difs)
         av.eventos.append({"em": _fmt(agora), "de": ultima.decisao, "para": auto, "origem": "automatico",
-                           "motivo": "aprovação invalidada por mudança de identidade (title, store ou officialUrl)"})
-        return ignorar("identidade do produto mudou depois da aprovação; nova revisão necessária", "identidade_mudou")
-    if orig == "A" and any(v.centavos != revisada.centavos or v.dados["price"]["currency"] != revisada.dados["price"]["currency"]
-                           for v in ate_aqui):
-        av.aprovacao_invalidada_por_preco = True
-        av.eventos.append({"em": _fmt(agora), "de": ultima.decisao, "para": auto, "origem": "automatico",
-                           "motivo": "aprovação invalidada por mudança de preço"})
-        return ignorar("preço mudou depois da aprovação; nova revisão necessária", "preco_mudou")
+                           "motivo": "aprovação invalidada por mudança material: " + resumo})
+        return ignorar("mudança material desde a versão revisada: " + resumo + "; nova revisão humana necessária",
+                       codigos[0], codigos=codigos, campos=sorted({c for x in difs for c in x["campos"]}))
     permitido = estados.PENDENTE_REVISAO if orig == "A" else estados.CANDIDATO_NAO_VERIFICADO
     if auto != permitido:
         return ignorar(f"estado automático '{auto}' não permite aprovação", "estado_nao_permite")
-    if orig == "B" and ultima.decisao == estados.APROVADO_PUBLICACAO:
-        return ignorar("fonte B nunca é aprovada para publicação (somente rascunho editorial)", "fonte_b_sem_publicacao")
     _aplicar(av, ultima, ultima.decisao, "aprovação humana registrada")
     return av
+
+
+def _divergencia(produto: Produto, revisada, decisao: Decisao, outra: Produto | None) -> tuple[list[str], list[str], list[str]]:
+    """(campos divergentes na revisão, campos divergentes atuais, campos NOVOS) entre A e B; vazio sem a outra fonte."""
+    if outra is None:
+        return [], [], []
+    orig = origem(produto.vigente.dados)
+    outra_rev = imp.versao_na_data(outra, decisao.data)
+    par = (lambda v_a, v_b: imp.divergencias_campos(v_a, v_b))
+    if orig == "A":
+        atual = par(produto.vigente, outra.vigente)
+        na_revisao = par(revisada, outra_rev) if outra_rev else []
+    else:
+        atual = par(outra.vigente, produto.vigente)
+        na_revisao = par(outra_rev, revisada) if outra_rev else []
+    return na_revisao, atual, imp.divergencia_alterada(na_revisao, atual)
 
 
 def _aplicar(av: AvaliacaoV11, dec: Decisao, estado: str, motivo: str):

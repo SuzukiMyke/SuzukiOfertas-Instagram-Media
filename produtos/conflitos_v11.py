@@ -8,13 +8,15 @@ Regras (nenhuma fonte substitui decisão humana nem permissão de foto; nada con
 2. **B continua fornecendo dados editoriais** (título, loja, categoria, URL oficial) ao lado de A em ``editorialB``;
    nada de B sobrescreve dado de A (a categoria de B é apenas sugestão visível).
 3. **Divergência de identificação (título, loja, URL oficial) ou de características (conjunto de ``verifiedFacts``)
-   entre as versões vigentes de A e B exige revisão**: estado ``pendente_revisao`` com os campos divergentes. Uma
-   aprovação só vale se a decisão humana for **posterior às duas exportações vigentes** (revisão feita já com a divergência).
+   entre as versões vigentes de A e B exige revisão**: estado ``pendente_revisao`` com os campos divergentes. A
+   aprovação humana feita já com a divergência continua válida se o conjunto atual de campos divergentes for igual ou subconjunto do existente na revisão
+   (``divergencia_ab_alterada`` quando surge campo novo; P-08, ``impressao_v11``). Nova exportação sem alteração material NÃO invalida.
    O formato exportado não tem campo de "modelo"; a comparação de modelo fica restrita a título e características.
 4. **Decisão humana que deixa de ser aplicável nunca some em silêncio**: cada uma entra em ``decisoesInaplicaveis`` com um
-   código (``fonte_nao_selecionada``, ``divergencia_ab_pendente_revisao``, ``versao_desconhecida``, ``identidade_mudou``,
+   código (``fonte_nao_selecionada``, ``versao_desconhecida``, ``identidade_mudou``,
    ``preco_mudou``, ``estado_nao_permite``, ``fonte_b_sem_publicacao``, ``data_futura``, ``anterior_a_exportacao``,
-   ``superada_por_decisao_mais_recente``) e motivo. Rejeição humana vale para o produto mesmo se registrada sobre a outra fonte.
+   ``superada_por_decisao_mais_recente``) e, desde P-08, ``fatos_mudaram``, ``fonte_comprovacao_mudou``,
+   ``disponibilidade_mudou``, ``fonte_mudou`` e ``divergencia_ab_alterada`` e motivo. Rejeição humana vale para o produto mesmo se registrada sobre a outra fonte.
 """
 from __future__ import annotations
 
@@ -22,26 +24,20 @@ import json
 from datetime import datetime
 
 from . import estados
-from .avaliacao_v11 import AvaliacaoV11, ConfiguracaoV11, _aplicar, _fmt, _identidade, avaliar_v11, estado_automatico_v11
+from . import impressao_v11 as imp
+from .avaliacao_v11 import AvaliacaoV11, ConfiguracaoV11, _aplicar, _fmt, avaliar_v11, estado_automatico_v11
 from .decisoes import Decisao
 from .prepublicacao import janela_comercial
 from .registro import Produto, Versao
 
-CODIGOS = ("fonte_nao_selecionada", "divergencia_ab_pendente_revisao", "versao_desconhecida", "identidade_mudou",
-           "preco_mudou", "estado_nao_permite", "fonte_b_sem_publicacao", "data_futura", "anterior_a_exportacao",
-           "superada_por_decisao_mais_recente", "produto_ausente")
-
-
-def _fatos(v: Versao) -> list[str]:
-    return sorted({f["text"].strip().lower() for f in v.dados["verifiedFacts"]})
+CODIGOS = ("fonte_nao_selecionada", "versao_desconhecida", "identidade_mudou", "preco_mudou", "fatos_mudaram",
+           "fonte_comprovacao_mudou", "disponibilidade_mudou", "fonte_mudou", "divergencia_ab_alterada", "estado_nao_permite",
+           "fonte_b_sem_publicacao", "data_futura", "anterior_a_exportacao", "superada_por_decisao_mais_recente",
+           "produto_ausente")
 
 
 def comparar_ab(va: Versao, vb: Versao) -> dict | None:
-    ia, ib = _identidade(va), _identidade(vb)
-    campos = [k for k in ("title", "store", "officialUrl") if ia[k] != ib[k]]
-    fa, fb = _fatos(va), _fatos(vb)
-    if (fa or fb) and fa != fb:
-        campos.append("verifiedFacts")
+    campos = imp.divergencias_campos(va, vb)
     return {"campos": campos, "exportIdA": va.export_id, "exportIdB": vb.export_id} if campos else None
 
 
@@ -58,13 +54,15 @@ def _inaplicaveis(decisoes: list[Decisao], av: AvaliacaoV11, pre: dict) -> list[
         if av.decisao_aplicada is d:
             continue
         k = (d.export_id, d.decisao, d.data_txt)
+        extra = {}
         if id(d) in pre:
             cod, mot = pre[id(d)]
         elif k in ign:
             cod, mot = ign[k].get("codigo", "estado_nao_permite"), ign[k]["ignoradaPorque"]
+            extra = {x: ign[k][x] for x in ("codigos", "campos") if x in ign[k]}     # P-08: todos os códigos e campos materiais
         else:
             cod, mot = "superada_por_decisao_mais_recente", "existe decisão humana mais recente para o produto"
-        out.append({**d.como_dict(), "codigo": cod, "motivo": mot})
+        out.append({**d.como_dict(), "codigo": cod, "motivo": mot, **extra})
     return out
 
 
@@ -101,13 +99,8 @@ def resolver(prod_a: Produto | None, prod_b: Produto | None, decisoes: list[Deci
             pre[id(cand)] = ("fonte_nao_selecionada",
                              f"decisão registrada sobre versão da fonte {'A' if sel == 'B' else 'B'}; a ficha é sustentada "
                              f"pela fonte {sel} e nenhuma fonte substitui decisão humana")
-        if (div and passar and cand.decisao in estados.APROVACOES and cand.export_id in ids_sel
-                and cand.data < max(va.exportada_em, vb.exportada_em)):
-            passar = []
-            pre[id(cand)] = ("divergencia_ab_pendente_revisao",
-                             "decisão anterior à exportação mais recente de A ou B e há divergência A × B ("
-                             + ", ".join(div["campos"]) + "); nova revisão humana necessária")
-    av = avaliar_v11(base, passar, agora, cfg, foto)
+    outra = prod_a if sel == "B" else prod_b
+    av = avaliar_v11(base, passar, agora, cfg, foto, outra=outra)
     if rejeicao_outra is not None:
         _aplicar(av, rejeicao_outra, estados.REJEITADO, "rejeitada por decisão humana (registrada sobre a outra fonte)")
 

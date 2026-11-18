@@ -70,6 +70,8 @@ def montar_v11(produto: Produto, av: AvaliacaoV11, agora: datetime) -> dict:
     f["fonteComercial"] = av.fonte_comercial
     f["editorialB"] = av.editorial_b
     f["decisoesInaplicaveis"] = av.decisoes_inaplicaveis
+    f["impressaoMaterialDecisao"] = av.impressao_decisao
+    f["invalidacoesMateriais"] = av.invalidacoes_materiais
     if av.divergencias_ab:
         f["avisos"].append("Divergência A × B em " + ", ".join(av.divergencias_ab["campos"]) + ": revisão humana obrigatória.")
     if av.fonte_comercial and av.fonte_comercial["estadoAutomatico"] == "expirado":

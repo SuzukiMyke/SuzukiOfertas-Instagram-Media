@@ -142,7 +142,7 @@ class DivergenciaTest(Base2):
         antes = self.dec(1, data="2026-11-17T14:30:00Z")                               # anterior ao B divergente
         f, _ = self.ficha(a_com(1), b, decisoes=[antes])
         self.assertEqual(f["estado"], estados.PENDENTE_REVISAO)
-        self.assertEqual(f["decisoesInaplicaveis"][0]["codigo"], "divergencia_ab_pendente_revisao")
+        self.assertEqual(f["decisoesInaplicaveis"][0]["codigo"], "divergencia_ab_alterada")   # P-08: código renomeado pelo GOAL
         self.setUp()
         depois = self.dec(1, data="2026-11-17T14:55:00Z")                              # revisão já com a divergência
         f2, _ = self.ficha(a_com(1), b, decisoes=[depois])
@@ -177,8 +177,9 @@ class DecisoesInaplicaveisP04Test(Base2):
         self.assertTrue(any("decisão humana inaplicável (versao_desconhecida)" in a for a in r["avisos"]))
 
     def test_preco_e_identidade_mudaram(self):
+        # P-08 (alteração intencional): preço é material só para aprovado_para_publicacao (antes valia para qualquer aprovação)
         a = {"a1.json": a_com(1), "a2.json": a_com(2, exportedAt="2026-11-17T14:00:00Z", price__amountCents=1)}
-        r, f = self.rodar(a=a, humanos=self.humanos(decisoes=[self.dec(1)]))
+        r, f = self.rodar(a=a, humanos=self.humanos(decisoes=[self.dec(1, "aprovado_para_publicacao")]))
         self.assertEqual(self.codigos(f[CHAVE]), ["preco_mudou"])
         self.setUp()
         a = {"a1.json": a_com(1), "a2.json": a_com(2, exportedAt="2026-11-17T14:00:00Z", product__title="Outro")}
