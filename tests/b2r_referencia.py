@@ -182,6 +182,21 @@ def comparar_b2(atual: dict, ref_b2: dict, ref_conteudo: dict | None, ambiente_a
             "motivoBytesPng": motivo if equivalente else "comparação dos bytes comprimidos dispensada: " + motivo}
 
 
+def comparar_deterministico(a: dict, b: dict) -> list[str]:
+    """Diferenças entre duas execuções locais (mesma entrada e relógio): JPEGs, PNGs, folha e conteúdo devem ser IDÊNTICOS byte a byte."""
+    erros = []
+    if [s["arquivo"] for s in a["slides"]] != [s["arquivo"] for s in b["slides"]]:
+        return ["slides (nome ou ordem) diferem entre as duas execuções"]
+    for x, y in zip(a["slides"], b["slides"]):
+        for k in ("jpegSha256", "pngSha256", "pngConteudo"):
+            if x[k] != y[k]:
+                erros.append(f"{x['arquivo']}: {k} difere entre as duas execuções")
+    if a["folha"] != b["folha"]:
+        erros.append("folha difere entre as duas execuções")
+    erros += [f"{k} difere entre as duas execuções" for k in ("status", "fundo", "carrossel") if a[k] != b[k]]
+    return erros
+
+
 def verificar_b2(estilo: str | None = None) -> dict:
     """Captura + comparação com ``b2r_referencia.json`` (uso dos testes). Inclui a captura e o ambiente medido no resultado."""
     ref = json.loads(ARQUIVO.read_text(encoding="utf-8"))
