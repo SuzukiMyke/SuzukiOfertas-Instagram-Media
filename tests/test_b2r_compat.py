@@ -160,12 +160,14 @@ class ConstantesEHelpersTest(unittest.TestCase):
         self.assertGreater(v.contraste_efetivo(ok, (20, 20, 480, 180), idv.BRANCO)["razao"], 4.5)
         claro = Image.new("RGB", (500, 200), (235, 235, 235))
         self.assertLess(v.contraste_efetivo(claro, (20, 20, 480, 180), idv.BRANCO)["razao"], 4.5)
-        # fundo escuro com uma mancha clara atrás do texto: a mediana seria "escura", mas o contraste EFETIVO reprova
+        # fundo escuro com uma mancha clara atrás do texto: a mediana seria "escura". A heurística não consegue separar um fundo quase igual à cor
+        # do texto de um glifo; por isso os layouts usam a medição EXATA: render sem texto + pior pixel do fundo na caixa do texto.
         misto = Image.new("RGB", (500, 200), idv.AZUL_ESCURO)
-        d = ImageDraw.Draw(misto)
-        d.rectangle((20, 20, 480, 100), fill=(240, 240, 240))
-        d.rectangle((60, 120, 440, 150), fill=idv.BRANCO)
-        self.assertLess(v.contraste_efetivo(misto, (20, 20, 480, 180), idv.BRANCO)["razao"], 4.5)
+        ImageDraw.Draw(misto).rectangle((20, 20, 480, 100), fill=(240, 240, 240))
+        exato = v.contraste_sobre_fundo(misto, (20, 20, 480, 180), idv.BRANCO)
+        self.assertLess(exato["razao"], 4.5)
+        self.assertGreater(v.contraste_sobre_fundo(Image.new("RGB", (500, 200), idv.AZUL_ESCURO), (20, 20, 480, 180), idv.BRANCO)["razao"], 12)
+        self.assertGreater(v.contraste_sobre_fundo(Image.new("RGB", (500, 200), idv.AMARELO), (20, 20, 480, 180), idv.AZUL_ESCURO)["razao"], 8)
 
     def test_maior_area_vazia(self):
         r1 = v.maior_area_vazia([], 1080, 1350, 72)
