@@ -2,7 +2,7 @@
 
 Etapas: 1 ficha -> 2 exportação B (curadoria_b) -> 3 receptor 1.1 -> 4 elegibilidade editorial -> 5 fundo de marca no catálogo
 TEMPORÁRIO -> 6 aprovação da imagem -> 7 ficha -> carrossel -> 8 renderização (3 a 5 slides) -> 9 validação -> 10 relatórios
-(a folha de contato entra na etapa 10 quando o módulo ``folha`` está presente).
+(a folha de contato e os relatórios fecham a etapa 10).
 
 Aprovação da imagem: sem ``aprovar_fundo_ficticio`` o fluxo PARA com ``aprovacao_pendente`` (a imagem fica pendente, como no
 funcionamento normal). Com a opção, só a fixture fictícia reconhecida (hash conhecido) e um catálogo temporário criado aqui são
@@ -31,6 +31,8 @@ from produtos.leitor import decodificar_json
 from produtos.pipeline_v11 import processar_v11
 from produtos.selecao_contrato import DADOS_REAIS_HABILITADO
 from produtos.tempo import formatar
+
+from .folha import gerar_folha
 
 VERSAO = "1.0"
 RESOLUCAO = (1080, 1350)
@@ -124,13 +126,6 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
     rel["fichaSha256"] = sha_ficha
     rel["fixtureFicticia"] = sha_ficha in FIXTURES_FICTICIAS
     f.etapa("ficha", "ok", sha256=sha_ficha, fixtureFicticia=rel["fixtureFicticia"])
-    if aprovar and not rel["fixtureFicticia"]:                          # recusa cedo: a opção só vale para a fixture reconhecida
-        rel["status"] = "aprovacao_de_teste_recusada"
-        f.bloqueios.append({"codigo": "aprovacao_de_teste_recusada",
-                            "motivo": "--aprovar-fundo-ficticio só é aceito para a fixture fictícia reconhecida"})
-        f.etapa("aprovacao_da_imagem", "recusada", motivo=f.bloqueios[-1]["motivo"])
-        return
-
     # 2. exportação B -----------------------------------------------------------------------------------------------------
     export_id = str(uuid.uuid5(NAMESPACE, sha_ficha + formatar(agora)))      # determinístico para a mesma ficha e horário
     lote_raiz = saida / "lote_curadoria"
@@ -175,6 +170,13 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
                     "id": ficha["produto"]["id"], "titulo": ficha["produto"]["title"], "precoVerificado": ficha["preco"]["amountCents"] is not None,
                     "alegacaoComercialPermitida": ficha["alegacaoComercialPermitida"], "fatosParaUso": len(ficha["fatosParaUso"])}
     f.etapa("elegibilidade_editorial", "ok", estado=ficha["estado"])
+
+    if aprovar and not rel["fixtureFicticia"]:                          # a opção só vale para a fixture reconhecida (antes de criar o catálogo)
+        rel["status"] = "aprovacao_de_teste_recusada"
+        f.bloqueios.append({"codigo": "aprovacao_de_teste_recusada",
+                            "motivo": "--aprovar-fundo-ficticio só é aceito para a fixture fictícia reconhecida"})
+        f.etapa("aprovacao_da_imagem", "recusada", motivo=f.bloqueios[-1]["motivo"])
+        return
 
     # 5. fundo de marca no catálogo TEMPORÁRIO ----------------------------------------------------------------------------
     cat_raiz = saida / "catalogo_temporario"
@@ -263,6 +265,10 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
         return
     f.etapa("renderizacao_e_validacao", "ok", slides=len(itens), resolucao="1080x1350", statusDoGerador=manifesto["status"])
     _validar_conteudo(f, config)
+    if not f.bloqueios:
+        folha = gerar_folha([pasta_png / it["png"] for it in itens], saida / "folha_de_contato.png")
+        rel["arquivos"] = {"folha": folha, "slidesPng": [it["png"] for it in itens], "slidesJpeg": [it["arquivo"] for it in itens]}
+        f.etapa("folha_de_contato", "ok", arquivo=folha["arquivo"], sha256=folha["sha256"])
     rel["status"] = "bloqueado" if f.bloqueios else "concluido"
 
 
