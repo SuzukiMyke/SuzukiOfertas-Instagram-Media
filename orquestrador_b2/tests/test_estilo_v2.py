@@ -233,12 +233,10 @@ class Fluxo(unittest.TestCase):
         self.assertFalse(rel["fixtureFicticia"])
 
     def test_estilo_v1_reproduz_a_b2(self):
-        atual = json.loads(json.dumps(ref.hashes_b2_antigo(), sort_keys=True))
-        antigo = json.loads((RAIZ / "tests" / "b2r_referencia.json").read_text(encoding="utf-8"))["b2"]
-        self.assertEqual(atual, json.loads(json.dumps(antigo, sort_keys=True)))
-        rel = executar(LEGADA, self.tmp / "v1", parse_data("2026-11-17T15:00:00Z"), aprovar_fundo_ficticio=True, estilo="v1")
-        self.assertEqual(rel["estilo"], "v1")
-        self.assertEqual([(s["arquivo"], s["sha256"], s["pngSha256"]) for s in rel["slides"]], [tuple(x) for x in antigo["slides"]])
+        for estilo in (None, "v1"):                    # padrão (auto → v1 na fixture legada) e v1 explícito
+            res = ref.verificar_b2(estilo)
+            self.assertEqual(res["erros"], [], res["motivoBytesPng"])
+            self.assertEqual(res["captura"]["estilo"], "v1")
 
     def test_estilo_invalido(self):
         with self.assertRaises(ErroFluxo):

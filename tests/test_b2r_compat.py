@@ -44,8 +44,8 @@ class RegressaoDosCaminhosAntigosTest(Base):
         self.assertEqual(atual, REFERENCIA["layouts"])
 
     def test_slides_do_b2_antigo_identicos_ao_anterior(self):
-        atual = json.loads(json.dumps(ref.hashes_b2_antigo(), sort_keys=True))
-        self.assertEqual(atual, REFERENCIA["b2"])
+        res = ref.verificar_b2()                       # conteúdo SEMPRE; bytes comprimidos dos PNGs só com ambiente comprovadamente equivalente
+        self.assertEqual(res["erros"], [], res["motivoBytesPng"])
 
     def test_golden_do_modo_1_0(self):
         from produtos.tests.golden_modo_1_0 import ARQUIVO, calcular
