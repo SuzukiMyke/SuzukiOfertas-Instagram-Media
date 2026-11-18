@@ -6,7 +6,9 @@ relógio do sistema (o horário efetivo de publicação é PARÂMETRO) e não gr
 ``titulo``, ``destaque``, ``texto`` e, quando a foto se repete, ``reutilizar``) mais avisos e bloqueios para a revisão humana.
 O contrato do gerador não é alterado. O resultado é SEMPRE um rascunho: ``aprovado_para_publicacao`` nunca é definido aqui.
 
-Elegibilidade (fichas fora disso levantam ``CarrosselRecusado``, sem gerar conteúdo):
+Elegibilidade (fichas fora disso NÃO geram conteúdo e voltam como relatório ``status: "bloqueado"`` com o bloqueio
+``estado_inelegivel`` e os estados aceitos: é uma situação NORMAL de um lote, então não levanta exceção;
+``CarrosselRecusado`` fica só para chamada inválida: ficha de outro contrato, horário sem fuso, classe visual ou alegação malformadas):
 - fonte A: ``aprovado_para_rascunho`` ou ``aprovado_para_publicacao`` (aprovação humana já registrada);
 - fonte B: ``candidato_nao_verificado`` ou ``aprovado_para_rascunho`` → só rascunho EDITORIAL: nunca preço, desconto, estoque,
   urgência, "menor preço" nem qualquer alegação comercial.
@@ -26,6 +28,7 @@ from urllib.parse import urlparse
 
 from . import estados
 from .politica_titulos import ALTA, MEDIA, avaliar_titulo
+from .tempo import formatar
 from .prepublicacao import BLOQUEAR, FUNCOES, LIBERAR, TIPOS_ALEGACAO, avaliar_portao
 
 CLASSES_VISUAIS = ("foto_real_autorizada", "ambientacao_ilustrativa", "composicao_grafica")
@@ -45,7 +48,7 @@ _FOCO_PADRAO = (0.5, 0.45)
 
 
 class CarrosselRecusado(ValueError):
-    """Ficha inelegível ou chamada inválida: nenhum conteúdo é gerado."""
+    """Chamada inválida (ficha de outro contrato, horário sem fuso, classe visual ou alegação malformadas); nenhum conteúdo."""
 
 
 def _limpa(txt) -> str:
@@ -154,7 +157,7 @@ def ficha_para_carrossel_v11(ficha: dict, *, t_publicacao: datetime, foto_catalo
     elegiveis = ((estados.APROVADO_RASCUNHO, estados.APROVADO_PUBLICACAO) if origem == "A"
                  else (estados.CANDIDATO_NAO_VERIFICADO, estados.APROVADO_RASCUNHO) if origem == "B" else ())
     if estado not in elegiveis:
-        raise CarrosselRecusado(f"estado '{estado}' (origem {origem}) é inelegível: nenhum conteúdo é gerado")
+        return _inelegivel(ficha, estado, origem, elegiveis, t_publicacao, recurso_visual)
 
     prod = ficha["produto"]
     bloqueios: list[dict] = []
@@ -297,4 +300,20 @@ def _resultado(ficha, carrossel, bloqueios, avisos, omitidas, permitidas, portao
         "afiliado": afiliado, "origem": ficha["origem"], "estado_ficha": ficha["estado"],
         "revisao_humana_obrigatoria": True, "aprovado_para_publicacao_definido": False,
         "legenda_sugerida": "\n".join(legenda), "t_publicacao_avaliado": portao["avaliado_para"],
+    }
+
+
+def _inelegivel(ficha: dict, estado, origem, elegiveis, t_publicacao, classe) -> dict:
+    """Relatório de bloqueio para ficha em estado inelegível: mesmas chaves do resultado normal, sem conteúdo e sem avaliar o portão."""
+    motivo = (f"estado '{estado}' (origem {origem}) é inelegível para carrossel; estados aceitos: "
+              + (", ".join(elegiveis) if elegiveis else "nenhum (origem desconhecida)") + ". Nenhum conteúdo foi gerado.")
+    return {
+        "contrato": "1.1", "status": "bloqueado", "resolucao": RESOLUCAO, "carrossel": None,
+        "bloqueios": [{"codigo": "estado_inelegivel", "motivo": motivo, "estado": estado, "origem": origem,
+                       "estados_elegiveis": list(elegiveis)}],
+        "avisos": ["revisão humana: a ficha precisa chegar a um estado elegível antes de gerar rascunho"],
+        "alegacoes_omitidas": [], "alegacoes_comerciais_permitidas": [], "portao": None, "classe_visual": classe,
+        "afiliado": bool((ficha.get("produto") or {}).get("affiliateUrl")), "origem": origem, "estado_ficha": estado,
+        "revisao_humana_obrigatoria": True, "aprovado_para_publicacao_definido": False,
+        "legenda_sugerida": "", "t_publicacao_avaliado": formatar(t_publicacao),
     }

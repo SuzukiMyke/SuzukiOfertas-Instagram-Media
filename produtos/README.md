@@ -155,3 +155,12 @@ comerciais só se o portão (`prepublicacao`) permitir para `t_publicacao`; esse
 MÉDIA exige revisão. Foto real só com permissão humana + hash do catálogo igual a `fotoSha256`; imagens ilustrativas são rotuladas. Último slide: CTA WhatsApp/Telegram
 (links só se fornecidos e oficiais) e identificação de afiliado quando aplicável. Emite só `foto_topo` e `cartao` (o validador do gerador reprova combinações de texto em `foto_cheia`).
 O contrato do gerador não foi alterado; a compatibilidade é provada nos testes carregando e **renderizando** o JSON (1080×1350) com o próprio gerador, em pasta temporária.
+
+### Etapa 5.14-A (commit 3) — revisão de conformidade
+
+- **Impressão material e decisões** (`decisoes_v11.py`): o formato de `decisoes.json` não mudou. Uma impressão fornecida pelo próprio arquivo **nunca** é aceita (sem validação de procedência); a decisão que a traz
+  fica registrada em `decisoesInvalidasNoArquivo` (ficha e `resumo.json`) com o código `impressao_fornecida_sem_procedencia`, sem ecoar o valor. A impressão é recalculada da versão revisada; sem ela,
+  a decisão fica inaplicável de forma explícita (`versao_desconhecida`, `impressaoComparavel: false`).
+- **Divergências A × B por valor**: o campo divergente passa a valer com o par de valores normalizado (NFKC, espaços, caixa, URL sem formatação). Mesmo campo com valor materialmente diferente = `valor_alterado`; campo
+  novo = `novo`; igual ou redução continua válido. Preço e disponibilidade não entram na divergência (seguem o portão comercial).
+- **Carrossel**: ficha em estado inelegível devolve relatório `status: "bloqueado"` (`estado_inelegivel`), sem exceção; `CarrosselRecusado` só para chamada inválida.

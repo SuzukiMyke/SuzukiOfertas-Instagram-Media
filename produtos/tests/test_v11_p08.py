@@ -160,11 +160,13 @@ class DivergenciaABTest(P08Base):
         self.assertEqual((f["estado"], f["decisoesInaplicaveis"]), (RAS, []))
         self.assertEqual(f["impressaoMaterialDecisao"]["divergenciasNaRevisao"], ["title"])
 
-    def test_mesmo_campo_divergente_com_outro_valor_continua_valido(self):
+    def test_mesmo_campo_divergente_com_valor_materialmente_diferente_invalida(self):
+        # revisão 5.14-A (comportamento alterado): antes só o NOME do campo contava; agora o par de valores revisado também
         b1 = b_de(4, product__title="Título Divergente", exportedAt="2026-11-17T13:30:00Z")
         b2 = b_de(5, product__title="Outro Título Divergente", exportedAt="2026-11-17T14:50:00Z")
         f = self.rodar_ab([a_com(1)], [b1, b2], self.dec(1, RAS, data="2026-11-17T14:00:00Z"))
-        self.assertEqual(f["estado"], RAS)
+        ent = self.invalida(f, "divergencia_ab_alterada")
+        self.assertEqual(ent["divergenciasAlteradas"], {"title": "valor_alterado"})
 
     def test_divergencia_que_diminui_mantem(self):
         b1 = b_de(4, product__title="Título Divergente", product__store="Outra Loja", exportedAt="2026-11-17T13:30:00Z")

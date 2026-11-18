@@ -14,7 +14,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from . import decisoes as dec, estados, permissoes, registro
+from . import decisoes as dec, decisoes_v11, estados, permissoes, registro
 from .avaliacao_v11 import ConfiguracaoV11
 from .conflitos_v11 import resolver
 from .fichas import nome_arquivo
@@ -59,6 +59,11 @@ def processar_v11(exportacoes: Path | str, saida: Path | str, agora: datetime, *
     em_a_e_b = sorted(f"{k[0]}/{k[1]}" for k in set(reg_a.produtos) & set(reg_b.produtos))
 
     decs = dec.carregar(decisoes_arquivo)
+    aud = decisoes_v11.auditar_arquivo(decisoes_arquivo)
+    aud_por_produto: dict = {}
+    for x in aud["invalidas"]:
+        if x["produto"]:
+            aud_por_produto.setdefault(x["produto"], []).append({k: v for k, v in x.items() if k != "produto"})
     reg_h = permissoes.carregar(termos_arquivo, permissoes_arquivo)
 
     resultado, conflitos, inaplicaveis = [], [], []
@@ -68,13 +73,15 @@ def processar_v11(exportacoes: Path | str, saida: Path | str, agora: datetime, *
         foto = permissoes.avaliar_foto(chave[0], chave[1], reg_h, fotos_dir, (d.get("photo") or {}).get("url"))
         base, av = resolver(pa, pb, decs.por_produto.get(chave, []), agora, cfg, foto)
         ficha = montar_v11(base, av, agora)
+        ficha["decisoesInvalidasNoArquivo"] = aud_por_produto.get(chave, [])
         resultado.append(ficha)
         nome = f"{chave[0]}/{chave[1]}"
         if pa is not None and pb is not None:
             conflitos.append({"produto": nome, "fonteSelecionada": av.fonte_selecionada,
                               "divergencias": (av.divergencias_ab or {}).get("campos", []),
                               "estadoDaFonteA": av.fonte_comercial["estadoAutomatico"]})
-        inaplicaveis += [{"produto": nome, "exportId": x["exportId"], "decisao": x["decisao"], "codigo": x["codigo"]}
+        inaplicaveis += [{"produto": nome, "exportId": x["exportId"], "decisao": x["decisao"], "codigo": x["codigo"],
+                          **({"impressaoComparavel": x["impressaoComparavel"]} if "impressaoComparavel" in x else {})}
                          for x in av.decisoes_inaplicaveis]
     sem_produto = []                                   # P-04: decisão sobre produto que não está em nenhuma fonte lida
     for chave in sorted(set(decs.por_produto) - set(chaves)):
@@ -117,6 +124,9 @@ def processar_v11(exportacoes: Path | str, saida: Path | str, agora: datetime, *
         "conflitosAB": conflitos,
         "decisoesInaplicaveis": inaplicaveis,
         "decisoesSemProduto": sem_produto,
+        "decisoesArquivo": {"status": aud["status"], "invalidas": len(aud["invalidas"])},
+        "decisoesInvalidasNoArquivo": [{**x, "produto": (f"{x['produto'][0]}/{x['produto'][1]}" if x["produto"] else None)}
+                                       for x in aud["invalidas"]],
         "duplicatasExportId": reg_a.duplicatas_export_id + reg_b.duplicatas_export_id,
         "ignoradosEmSilencio": {l: lotes[l].leitura.ignorados for l in LETRAS},
         "commitsLidos": commits,
@@ -128,7 +138,8 @@ def processar_v11(exportacoes: Path | str, saida: Path | str, agora: datetime, *
         "avisos": [a for l in LETRAS for a in lotes[l].motivos if lotes[l].status in ("pasta_ausente", "vazio")]
                   + decs.avisos + reg_h.avisos
                   + [f"decisão humana inaplicável ({x['codigo']}): {x['produto']}" for x in inaplicaveis]
-                  + [f"decisão humana sem produto nas fontes lidas: {x['produto']}" for x in sem_produto],
+                  + [f"decisão humana sem produto nas fontes lidas: {x['produto']}" for x in sem_produto]
+                  + [f"decisão #{x['indice']} do arquivo não aceita ({', '.join(x['codigos'])})" for x in aud["invalidas"]],
     }
     _gravar_json(saida / "resumo.json", resumo)
     return resumo

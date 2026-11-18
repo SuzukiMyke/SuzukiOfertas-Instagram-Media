@@ -150,16 +150,20 @@ class FonteATest(CarrosselBase):
 
 
 class EstadosInelegiveisTest(CarrosselBase):
-    def test_estados_inelegiveis_nao_geram_conteudo(self):
+    def test_estados_inelegiveis_voltam_como_bloqueio_explicito_sem_conteudo(self):
+        # revisão 5.14-A: estado inelegível é situação NORMAL de um lote -> relatório de bloqueio, não exceção
         base = self.ficha_a()
-        for est in ("pendente_revisao", "incompleto", "expirado", "invalidado", "rejeitado", "recebido", "candidato_nao_verificado"):
-            f = {**base, "estado": est}                                       # A com estado de B é inelegível
-            with self.assertRaises(CarrosselRecusado, msg=est):
-                self.gerar(f)
+        casos = [(base, est) for est in ("pendente_revisao", "incompleto", "expirado", "invalidado", "rejeitado", "recebido",
+                                         "candidato_nao_verificado")]
         b = self.ficha_b()
-        for est in ("pendente_revisao", "expirado", "aprovado_para_publicacao", "rejeitado", "incompleto"):
-            with self.assertRaises(CarrosselRecusado, msg=est):
-                self.gerar({**b, "estado": est})
+        casos += [(b, est) for est in ("pendente_revisao", "expirado", "aprovado_para_publicacao", "rejeitado", "incompleto")]
+        for ficha, est in casos:
+            r = self.gerar({**ficha, "estado": est})
+            self.assertEqual((r["status"], r["carrossel"], r["portao"]), ("bloqueado", None, None), est)
+            bl = r["bloqueios"][0]
+            self.assertEqual((bl["codigo"], bl["estado"]), ("estado_inelegivel", est))
+            self.assertTrue(bl["estados_elegiveis"])
+            self.assertEqual((r["alegacoes_comerciais_permitidas"], r["aprovado_para_publicacao_definido"]), ([], False))
 
     def test_chamadas_invalidas(self):
         f = self.ficha_a()
@@ -221,8 +225,8 @@ class ImagensTest(CarrosselBase):
     def test_a_sem_foto_humana_nem_e_elegivel(self):
         f = self.ficha_a(permissoes=[])
         self.assertEqual(f["estado"], "incompleto")
-        with self.assertRaises(CarrosselRecusado):
-            self.gerar(f)
+        r = self.gerar(f)
+        self.assertEqual((r["status"], r["bloqueios"][0]["codigo"]), ("bloqueado", "estado_inelegivel"))
 
     def test_hash_do_catalogo_divergente(self):
         cat = copy.deepcopy(CAT)

@@ -59,7 +59,7 @@ def _inaplicaveis(decisoes: list[Decisao], av: AvaliacaoV11, pre: dict) -> list[
             cod, mot = pre[id(d)]
         elif k in ign:
             cod, mot = ign[k].get("codigo", "estado_nao_permite"), ign[k]["ignoradaPorque"]
-            extra = {x: ign[k][x] for x in ("codigos", "campos") if x in ign[k]}     # P-08: todos os códigos e campos materiais
+            extra = {x: ign[k][x] for x in ("codigos", "campos", "divergenciasAlteradas", "impressaoComparavel") if x in ign[k]}     # P-08: todos os códigos e campos materiais
         else:
             cod, mot = "superada_por_decisao_mais_recente", "existe decisão humana mais recente para o produto"
         out.append({**d.como_dict(), "codigo": cod, "motivo": mot, **extra})

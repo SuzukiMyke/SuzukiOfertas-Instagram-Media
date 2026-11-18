@@ -154,7 +154,8 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
 
     if ultima.export_id not in ids:
         return ignorar("exportId não pertence às versões conhecidas do produto; sem a versão revisada não há impressão digital "
-                       "material comparável (decisão tratada de forma conservadora: nova revisão necessária)", "versao_desconhecida")
+                       "material comparável (decisão tratada de forma conservadora: nova revisão necessária)", "versao_desconhecida",
+                       impressaoComparavel=False)
     idx = ids.index(ultima.export_id)
     if ultima.data > agora:
         return ignorar("data da decisão no futuro", "data_futura")
@@ -177,9 +178,12 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
         "componentes": list(imp.componentes_do_tipo(ultima.decisao)),
         "impressaoRevisada": imp.impressao(revisada, ultima.decisao), "impressaoAtual": imp.impressao(vigente, ultima.decisao),
         "divergenciasNaRevisao": div_rev, "divergenciasAtuais": div_atual,
+        "outraFonteDisponivelNaRevisao": None if outra is None else imp.versao_na_data(outra, ultima.data) is not None,
     }
+    av.impressao_decisao["divergenciasAlteradas"] = novas
     if novas:
-        difs.append({"codigo": "divergencia_ab_alterada", "componente": "divergencia_ab", "campos": novas})
+        difs.append({"codigo": "divergencia_ab_alterada", "componente": "divergencia_ab", "campos": sorted(novas),
+                     "detalhe": dict(sorted(novas.items()))})
     if difs:
         av.invalidacoes_materiais = difs
         codigos = [x["codigo"] for x in difs]
@@ -189,7 +193,8 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
         av.eventos.append({"em": _fmt(agora), "de": ultima.decisao, "para": auto, "origem": "automatico",
                            "motivo": "aprovação invalidada por mudança material: " + resumo})
         return ignorar("mudança material desde a versão revisada: " + resumo + "; nova revisão humana necessária",
-                       codigos[0], codigos=codigos, campos=sorted({c for x in difs for c in x["campos"]}))
+                       codigos[0], codigos=codigos, campos=sorted({c for x in difs for c in x["campos"]}),
+                       **({"divergenciasAlteradas": dict(sorted(novas.items()))} if novas else {}))
     permitido = estados.PENDENTE_REVISAO if orig == "A" else estados.CANDIDATO_NAO_VERIFICADO
     if auto != permitido:
         return ignorar(f"estado automático '{auto}' não permite aprovação", "estado_nao_permite")
@@ -197,20 +202,23 @@ def avaliar_v11(produto: Produto, decisoes: list[Decisao], agora: datetime, cfg:
     return av
 
 
-def _divergencia(produto: Produto, revisada, decisao: Decisao, outra: Produto | None) -> tuple[list[str], list[str], list[str]]:
-    """(campos divergentes na revisão, campos divergentes atuais, campos NOVOS) entre A e B; vazio sem a outra fonte."""
+def _divergencia(produto: Produto, revisada, decisao: Decisao, outra: Produto | None) -> tuple[list[str], list[str], dict[str, str]]:
+    """(campos divergentes na revisão, campos divergentes atuais, ``{campo: novo|valor_alterado}``) entre A e B.
+
+    Contrato §17.4: valem igual ou subconjunto do que existia na revisão. Um campo "divergente" é o campo COM o par de valores
+    (normalizados) que a pessoa revisou: o mesmo campo com outro valor é uma divergência nova (``valor_alterado``).
+    Formatação (espaços, caixa, barra final de URL) não conta. Vazio sem a outra fonte."""
     if outra is None:
-        return [], [], []
+        return [], [], {}
     orig = origem(produto.vigente.dados)
     outra_rev = imp.versao_na_data(outra, decisao.data)
-    par = (lambda v_a, v_b: imp.divergencias_campos(v_a, v_b))
     if orig == "A":
-        atual = par(produto.vigente, outra.vigente)
-        na_revisao = par(revisada, outra_rev) if outra_rev else []
+        atual = imp.divergencias_itens(produto.vigente, outra.vigente)
+        na_revisao = imp.divergencias_itens(revisada, outra_rev) if outra_rev else {}
     else:
-        atual = par(outra.vigente, produto.vigente)
-        na_revisao = par(outra_rev, revisada) if outra_rev else []
-    return na_revisao, atual, imp.divergencia_alterada(na_revisao, atual)
+        atual = imp.divergencias_itens(outra.vigente, produto.vigente)
+        na_revisao = imp.divergencias_itens(outra_rev, revisada) if outra_rev else {}
+    return sorted(na_revisao), sorted(atual), imp.divergencia_alterada_itens(na_revisao, atual)
 
 
 def _aplicar(av: AvaliacaoV11, dec: Decisao, estado: str, motivo: str):

@@ -34,6 +34,7 @@ import hashlib
 import json
 import re
 import unicodedata
+from urllib.parse import urlsplit, urlunsplit
 
 from . import estados
 from .registro import Versao
@@ -114,6 +115,48 @@ def divergencias_campos(va: Versao, vb: Versao) -> list[str]:
     if (fa or fb) and fa != fb:
         campos.append("verifiedFacts")
     return campos
+
+
+def _url(u) -> str:
+    """URL normalizada só para comparar (formatação não é mudança): esquema/host em caixa baixa, porta padrão, barra final e
+    fragmento ignorados. O caminho e a consulta continuam sensíveis a maiúsculas."""
+    try:
+        x = urlsplit(str(u).strip())
+        host = (x.hostname or "").lower()
+        if x.port and not ((x.scheme == "https" and x.port == 443) or (x.scheme == "http" and x.port == 80)):
+            host += f":{x.port}"
+        return urlunsplit((x.scheme.lower(), host, x.path.rstrip("/") or "/", x.query, ""))
+    except ValueError:
+        return str(u).strip()
+
+
+def divergencias_itens(va: Versao, vb: Versao) -> dict[str, tuple]:
+    """Itens divergentes entre A e B no MESMO critério de ``divergencias_campos`` (comparação textual exata, DT-19), mas cada item
+    carrega o par de VALORES já normalizado (NFKC, espaços, caixa; URL sem formatação). Serve para reconhecer mudança
+    material do valor divergente sem reagir a formatação."""
+    pa, pb = va.dados["product"], vb.dados["product"]
+    itens: dict[str, tuple] = {}
+    for campo in divergencias_campos(va, vb):
+        if campo == "verifiedFacts":
+            itens[campo] = (tuple(sorted({_n(f["text"]) for f in va.dados["verifiedFacts"]})),
+                            tuple(sorted({_n(f["text"]) for f in vb.dados["verifiedFacts"]})))
+        elif campo == "officialUrl":
+            itens[campo] = (_url(pa[campo]), _url(pb[campo]))
+        else:
+            itens[campo] = (_n(pa[campo]), _n(pb[campo]))
+    return itens
+
+
+def divergencia_alterada_itens(na_revisao: dict[str, tuple], atuais: dict[str, tuple]) -> dict[str, str]:
+    """Campos cuja divergência atual NÃO estava revisada: ``{"campo": "novo" | "valor_alterado"}``.
+    Igual ou subconjunto (redução) continua válido; mesmo campo com par de valores materialmente diferente é ``valor_alterado``."""
+    out = {}
+    for campo, par in atuais.items():
+        if campo not in na_revisao:
+            out[campo] = "novo"
+        elif na_revisao[campo] != par:
+            out[campo] = "valor_alterado"
+    return out
 
 
 def divergencia_alterada(campos_na_revisao: list[str], campos_atuais: list[str]) -> list[str]:
