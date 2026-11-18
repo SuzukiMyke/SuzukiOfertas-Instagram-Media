@@ -1,4 +1,4 @@
-"""CLI: ``python3 -m orquestrador_b2 FICHA.json --saida DIR [--agora ISO] [--aprovar-fundo-ficticio] [--whatsapp URL] [--telegram URL]``.
+"""CLI: ``python3 -m orquestrador_b2 FICHA.json --saida DIR [--agora ISO] [--aprovar-fundo-ficticio] [--estilo auto|v1|v2] [--whatsapp URL] [--telegram URL]``.
 
 Códigos de saída: 0 concluído · 2 ficha rejeitada/bloqueio/uso inválido · 3 aprovação da imagem pendente.
 """
@@ -22,6 +22,8 @@ def main(argv=None) -> int:
                     help="aprovação de TESTE do fundo, só para a fixture fictícia reconhecida; sem valor de homologação humana")
     ap.add_argument("--whatsapp", default=None, help="link oficial do canal do WhatsApp (somente se fornecido)")
     ap.add_argument("--telegram", default=None, help="link oficial do canal do Telegram (somente se fornecido)")
+    ap.add_argument("--estilo", choices=("auto", "v1", "v2"), default="auto",
+                    help="v1 reproduz a B2; v2 = estilo editorial B2R; auto: v1 para a fixture legada da B2 e v2 para as demais")
     ap.add_argument("--variante", type=int, default=0, help="variante do fundo de marca (0 a 11)")
     a = ap.parse_args(argv)
     agora = parse_data(a.agora) if a.agora else relogio_sistema()
@@ -31,7 +33,7 @@ def main(argv=None) -> int:
     links = {k: v for k, v in (("whatsapp", a.whatsapp), ("telegram", a.telegram)) if v}
     try:
         rel = executar(a.ficha, a.saida, agora, aprovar_fundo_ficticio=a.aprovar_fundo_ficticio, links_oficiais=links or None,
-                       variante=a.variante)
+                       variante=a.variante, estilo=a.estilo)
     except (ErroFluxo, ValueError) as e:
         print(f"erro: {e}", file=sys.stderr)
         return 2

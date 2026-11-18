@@ -25,6 +25,8 @@ from gerador import fundo_marca
 from gerador.carrossel import gerar
 from gerador.catalogo import RAIZ as RAIZ_REPO
 from gerador.catalogo import Catalogo
+from gerador.layouts import LAYOUTS, sem_texto
+from gerador.validacao import validar_slide_v2
 from produtos import estados
 from produtos.carrossel_fragmento_v11 import ficha_para_carrossel_v11
 from produtos.leitor import decodificar_json
@@ -32,6 +34,7 @@ from produtos.pipeline_v11 import processar_v11
 from produtos.selecao_contrato import DADOS_REAIS_HABILITADO
 from produtos.tempo import formatar
 
+from . import estilo_v2, ilustracoes
 from .folha import gerar_folha
 
 VERSAO = "1.0"
@@ -71,11 +74,12 @@ class _Fluxo:
         self.etapas.append({"n": len(self.etapas) + 1, "etapa": nome, "status": status, **extra})
 
 
-def resolver_aprovacao(sha_ficha: str, aprovar_fundo_ficticio: bool, catalogo: Catalogo) -> tuple[bool, str]:
-    """``(permitida, motivo)``: só fixture reconhecida + catálogo temporário (nunca o do repositório)."""
+def resolver_aprovacao(sha_ficha: str, aprovar_fundo_ficticio: bool, catalogo: Catalogo, fixture: dict | None = None) -> tuple[bool, str]:
+    """``(permitida, motivo)``: só fixture reconhecida (por conteúdo) + catálogo temporário (nunca o do repositório).
+    ``fixture``: resultado de ``estilo_v2.identificar_fixture``; ausente, vale apenas a fixture legada da B2 (hash dos bytes)."""
     if not aprovar_fundo_ficticio:
         return False, "sem a opção --aprovar-fundo-ficticio a imagem permanece pendente de aprovação humana"
-    if sha_ficha not in FIXTURES_FICTICIAS:
+    if fixture is None and sha_ficha not in FIXTURES_FICTICIAS:
         return False, "aprovação de teste recusada: a ficha não é a fixture fictícia reconhecida"
     if _dentro(Path(catalogo.raiz), RAIZ_REPO):
         return False, "aprovação de teste recusada: o catálogo não é temporário (está dentro do repositório)"
@@ -83,28 +87,30 @@ def resolver_aprovacao(sha_ficha: str, aprovar_fundo_ficticio: bool, catalogo: C
 
 
 def executar(ficha_arquivo, saida, agora: datetime, *, aprovar_fundo_ficticio: bool = False, links_oficiais: dict | None = None,
-             variante: int = 0) -> dict:
+             variante: int = 0, estilo: str = "auto") -> dict:
     """Executa o fluxo. Devolve o relatório (dicionário) com ``status``:
     ``concluido`` | ``aprovacao_pendente`` | ``rejeitado`` | ``bloqueado`` | ``aprovacao_de_teste_recusada``."""
     ficha_arquivo, saida = Path(ficha_arquivo), Path(saida)
+    if estilo not in estilo_v2.ESTILOS:
+        raise ErroFluxo(f"estilo inválido '{estilo}' (use {', '.join(estilo_v2.ESTILOS)})")
     if _dentro(saida, RAIZ_REPO):
         raise ErroFluxo("a pasta de saída deve ficar FORA do repositório (nada é versionado nesta etapa)")
     saida.mkdir(parents=True, exist_ok=True)
     f = _Fluxo(saida, agora)
     rel = f.rel
-    rel.update({"fluxo": "orquestrador_b2", "versao": VERSAO, "geradoEm": formatar(agora), "status": None, "fixtureFicticia": False,
+    rel.update({"fluxo": "orquestrador_b2", "versao": VERSAO, "estilo": None, "geradoEm": formatar(agora), "status": None, "fixtureFicticia": False,
                 "restricoes": {"produtosReaisHabilitado": PRODUTOS_REAIS_HABILITADO, "dadosReaisHabilitado": DADOS_REAIS_HABILITADO,
                                "rede": "nao_utilizada", "publicacao": "nao_realizada", "agendamento": "nao_realizado",
                                "catalogoPersistenteTocado": False}})
     try:
-        _executar(f, ficha_arquivo, agora, aprovar_fundo_ficticio, links_oficiais, variante)
+        _executar(f, ficha_arquivo, agora, aprovar_fundo_ficticio, links_oficiais, variante, estilo)
     finally:
         rel["etapas"], rel["avisos"], rel["bloqueios"] = f.etapas, f.avisos, f.bloqueios
         _finalizar(f)
     return rel
 
 
-def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, links: dict | None, variante: int) -> None:
+def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, links: dict | None, variante: int, estilo: str = "auto") -> None:
     rel, saida = f.rel, f.saida
     # 1. ficha ------------------------------------------------------------------------------------------------------------
     try:
@@ -124,8 +130,14 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
         f.bloqueios += [{"codigo": "ficha_invalida", "motivo": m} for m in erros]
         return
     rel["fichaSha256"] = sha_ficha
-    rel["fixtureFicticia"] = sha_ficha in FIXTURES_FICTICIAS
-    f.etapa("ficha", "ok", sha256=sha_ficha, fixtureFicticia=rel["fixtureFicticia"])
+    fixture = estilo_v2.identificar_fixture(sha_ficha, obj, FIXTURES_FICTICIAS)
+    rel["fixtureFicticia"] = fixture is not None
+    if fixture:
+        rel["fixture"] = {"id": fixture["id"], "arquivo": fixture["arquivo"]}
+    if estilo == "auto":                                                # fixture legada → v1 (reproduz a B2); demais → v2
+        estilo = fixture["estilo_padrao"] if fixture else "v2"
+    rel["estilo"] = estilo
+    f.etapa("ficha", "ok", sha256=sha_ficha, fixtureFicticia=rel["fixtureFicticia"], estilo=estilo)
     # 2. exportação B -----------------------------------------------------------------------------------------------------
     export_id = str(uuid.uuid5(NAMESPACE, sha_ficha + formatar(agora)))      # determinístico para a mesma ficha e horário
     lote_raiz = saida / "lote_curadoria"
@@ -183,14 +195,25 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
     if cat_raiz.exists():
         shutil.rmtree(cat_raiz)
     catalogo = Catalogo(cat_raiz)                                            # nunca Catalogo() sem raiz: não toca o do repositório
-    fid, _ = fundo_marca.registrar(catalogo, variante, agora=formatar(agora))
+    v2 = estilo == "v2"
+    fid, _ = fundo_marca.registrar(catalogo, variante, agora=formatar(agora), marca=not v2)    # v2: fundo SEM logotipo embutido
     meta = catalogo.obter(fid)
     rel["fundo"] = {"id": fid, "provedor": meta["provedor"], "origem": meta["origem"], "variante": variante, "sha256": meta["sha256"],
                     "largura": meta["largura"], "altura": meta["altura"], "aprovacaoInicial": meta["aprovacao"]["status"]}
     f.etapa("fundo_de_marca", "ok", **{k: rel["fundo"][k] for k in ("id", "sha256", "aprovacaoInicial")})
+    ids_v2 = None
+    if v2:                                                              # ilustração da categoria + 2 fundos extras (todos composição gráfica, sem logo)
+        categoria = estilo_v2.categoria_da_ficha(ficha)
+        extras = [fundo_marca.registrar(catalogo, (variante + k) % 12, agora=formatar(agora), marca=False)[0] for k in (1, 2)]
+        ilu, _ = ilustracoes.registrar_ilustracao(catalogo, categoria, variante % ilustracoes.VARIANTES, agora=formatar(agora))
+        ids_v2 = {"ilustracao": ilu, "fundos": [fid, *extras]}
+        rel["ilustracao"] = {"id": ilu, "categoria": ilustracoes.normalizar_categoria(categoria), "provedor": catalogo.obter(ilu)["provedor"],
+                             "sha256": catalogo.obter(ilu)["sha256"], "aprovacaoInicial": catalogo.obter(ilu)["aprovacao"]["status"]}
+        rel["fundosV2"] = ids_v2["fundos"]
+        f.etapa("ilustracao_e_fundos_v2", "ok", categoria=rel["ilustracao"]["categoria"], fundos=len(ids_v2["fundos"]))
 
     # 6. aprovação da imagem -----------------------------------------------------------------------------------------------
-    permitida, motivo = resolver_aprovacao(sha_ficha, aprovar, catalogo)
+    permitida, motivo = resolver_aprovacao(sha_ficha, aprovar, catalogo, fixture)
     if not permitida:
         pendente = not aprovar
         rel["status"] = "aprovacao_pendente" if pendente else "aprovacao_de_teste_recusada"
@@ -198,8 +221,9 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
         f.bloqueios.append({"codigo": rel["status"], "motivo": motivo})
         f.etapa("aprovacao_da_imagem", "pendente" if pendente else "recusada", motivo=motivo)
         return
-    catalogo.definir_aprovacao(fid, "aprovada", APROVADOR_TESTE,
-                               "aprovação AUTOMÁTICA de teste da fixture fictícia; não é homologação humana")
+    for imagem in ([fid] if not v2 else [*ids_v2["fundos"], ids_v2["ilustracao"]]):
+        catalogo.definir_aprovacao(imagem, "aprovada", APROVADOR_TESTE,
+                                   "aprovação AUTOMÁTICA de teste da fixture fictícia; não é homologação humana")
     catalogo.salvar()
     rel["aprovacaoDaImagem"] = {"status": "aprovada", "tipo": "teste_ficticio", "valorDeHomologacaoHumana": False, "por": APROVADOR_TESTE,
                                 "motivo": motivo}
@@ -207,7 +231,7 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
     f.etapa("aprovacao_da_imagem", "aprovada_de_teste", valorDeHomologacaoHumana=False)
 
     # 7. ficha -> carrossel -------------------------------------------------------------------------------------------------
-    ponte = ficha_para_carrossel_v11(ficha, t_publicacao=agora, foto_catalogo_id=fid, recurso_visual="composicao_grafica",
+    ponte = ficha_para_carrossel_v11(ficha, t_publicacao=agora, foto_catalogo_id=ids_v2["ilustracao"] if v2 else fid, recurso_visual="composicao_grafica",
                                      catalogo=catalogo.fotos, links_oficiais=links)
     f.avisos += ponte["avisos"]
     rel["ponte"] = {"status": ponte["status"], "classeVisual": ponte["classe_visual"], "legenda": ponte["legenda_sugerida"],
@@ -218,7 +242,17 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
         f.etapa("ficha_para_carrossel", "bloqueada", bloqueios=[b["codigo"] for b in ponte["bloqueios"]])
         return
     config = ponte["carrossel"]
-    if not links:                                                           # sem links oficiais: CTA textual, sem URL e sem promessa de link
+    if v2:
+        montagem = estilo_v2.montar_slides(ficha, config, ids_v2, links)
+        f.avisos += montagem.avisos
+        rel["slidesDescartados"] = montagem.descartes
+        if montagem.bloqueios:
+            rel["status"] = "bloqueado"
+            f.bloqueios += montagem.bloqueios
+            f.etapa("ficha_para_carrossel", "bloqueada", bloqueios=[b["codigo"] for b in montagem.bloqueios], slides=len(montagem.slides))
+            return
+        config = {**config, "slides": montagem.slides}
+    elif not links:                                                           # sem links oficiais: CTA textual, sem URL e sem promessa de link
         ult = config["slides"][-1]
         if ult.get("texto") == TEXTO_CTA_PADRAO_DA_PONTE:
             ult["texto"] = CTA_SEM_LINKS
@@ -256,6 +290,10 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
     for it in itens:
         if (it["largura"], it["altura"]) != RESOLUCAO or it["formato"] != "JPEG":
             problemas.append(f"{it['arquivo']}: dimensões/formato fora do esperado")
+    if v2 and not problemas:
+        medidas, erros_v2 = _validar_v2(config, catalogo, pasta_slides, ids_v2)
+        rel["validacaoV2"] = medidas
+        problemas += erros_v2
     rel["slides"] = itens
     rel["statusDoGerador"] = manifesto["status"]
     if problemas or manifesto["status"] != "pronto":
@@ -264,7 +302,7 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
         f.etapa("renderizacao_e_validacao", "reprovada", problemas=problemas)
         return
     f.etapa("renderizacao_e_validacao", "ok", slides=len(itens), resolucao="1080x1350", statusDoGerador=manifesto["status"])
-    _validar_conteudo(f, config)
+    _validar_conteudo(f, config, v2)
     if not f.bloqueios:
         folha = gerar_folha([pasta_png / it["png"] for it in itens], saida / "folha_de_contato.png")
         rel["arquivos"] = {"folha": folha, "slidesPng": [it["png"] for it in itens], "slidesJpeg": [it["arquivo"] for it in itens]}
@@ -275,14 +313,30 @@ def _executar(f: _Fluxo, ficha_arquivo: Path, agora: datetime, aprovar: bool, li
 COMERCIAL_PROIBIDO = ("R$", "%", "estoque", "desconto", "promoç", "frete", "últimas unidades", "corra", "só hoje", "menor preço", "oferta")
 
 
-def _validar_conteudo(f: _Fluxo, config: dict) -> None:
+def _validar_v2(config: dict, catalogo: Catalogo, pasta: Path, ids: dict) -> tuple[list[dict], list[str]]:
+    """Validação B2R de cada slide exportado (fontes, margem, contraste medido, logotipo, rótulo, áreas) + diversidade do carrossel."""
+    slides, total, medidas, erros = config["slides"], len(config["slides"]), [], []
+    for i, s in enumerate(slides, 1):
+        with Image.open(catalogo.caminho(s["foto"])) as foto:
+            _, areas = LAYOUTS[s["layout"]](foto.copy(), s, i, total)
+            with sem_texto():
+                fundo, _ = LAYOUTS[s["layout"]](foto.copy(), s, i, total)
+        r = validar_slide_v2(pasta / f"slide_{i:02d}.jpg", areas, fundo_sem_texto=fundo.convert("RGB"))
+        medidas.append({"slide": i, **r["medidas"], "ok": r["ok"]})
+        erros += [f"slide {i}: {e}" for e in r["erros"]]
+    erros += [f"carrossel: {e}" for e in estilo_v2.verificar_variedade(slides, {})]
+    return medidas, erros
+
+
+def _validar_conteudo(f: _Fluxo, config: dict, v2: bool = False) -> None:
     """Etapa 9 (conteúdo): nenhum slide pode conter informação comercial; rótulo da arte ilustrativa obrigatório; sem URL inventada."""
     textos = " | ".join(" ".join(str(s.get(k, "")) for k in ("titulo", "destaque", "texto")) for s in config["slides"])
     baixo = textos.lower().replace("suzuki ofertas", "").replace("suzukiofertas", "")     # o nome da marca não é alegação comercial
-    achados = [p for p in COMERCIAL_PROIBIDO if p.lower() in baixo]
+    achados = [p for p in COMERCIAL_PROIBIDO if p.lower() in baixo] if not v2 else (
+        [m.group(0) for m in [estilo_v2.TERMOS_PROIBIDOS.search(textos)] if m])    # v2: o CTA cita "ofertas" (nome da marca/assunto), sem alegação
     if achados:
         f.bloqueios.append({"codigo": "conteudo_comercial_nos_slides", "motivo": "termos comerciais encontrados: " + ", ".join(achados)})
-    if "Arte ilustrativa" not in textos:
+    if not v2 and "Arte ilustrativa" not in textos:
         f.bloqueios.append({"codigo": "rotulo_ausente", "motivo": "rótulo \"Arte ilustrativa\" ausente"})
     if "http" in baixo:
         f.bloqueios.append({"codigo": "url_nos_slides", "motivo": "URL encontrada no texto dos slides"})
@@ -296,6 +350,26 @@ def _finalizar(f: _Fluxo) -> None:
     rel["arquivos"] = rel.get("arquivos", {})
     (f.saida / "relatorio_b2.json").write_text(json.dumps(rel, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (f.saida / "relatorio_b2.md").write_text(_markdown(rel), encoding="utf-8")
+    if rel.get("estilo") == "v2" and rel.get("validacaoV2"):
+        (f.saida / "relatorio_visual.md").write_text(_markdown_visual(rel), encoding="utf-8")
+
+
+def _markdown_visual(rel: dict) -> str:
+    """Relatório visual do estilo v2: medições AUTOMÁTICAS por slide. Não substitui o julgamento visual humano."""
+    L = ["# Relatório visual — estilo editorial v2 (B2R)", "", "> RASCUNHO FICTÍCIO — NÃO PUBLICAR. As medidas abaixo são verificações automáticas; "
+         "a aprovação visual definitiva é humana.", "", f"- Ficha: `{rel.get('fixture', {}).get('id', '?')}` · status `{rel['status']}` · estilo `{rel['estilo']}`"]
+    if "ilustracao" in rel:
+        il = rel["ilustracao"]
+        L.append(f"- Ilustração: categoria `{il['categoria']}` · `{il['id']}` · provedor `{il['provedor']}` · aprovação inicial `{il['aprovacaoInicial']}`")
+    L += ["", "| Slide | Layout | Fontes mín. (px) | Contraste mín. | Maior área decorativa | Logo (px) |", "|---|---|---|---|---|---|"]
+    for m in rel["validacaoV2"]:
+        fm = ", ".join(f"{k} {v}" for k, v in m["fontes_min_px"].items())
+        L.append(f"| {m['slide']} | {m['layout']} | {fm} | {m['contraste_min']:.2f}:1 | {m['maior_area_decorativa']:.0%} | {m['logo_px'][0]}×{m['logo_px'][1]} |")
+    if rel.get("slidesDescartados"):
+        L += ["", "## Slides descartados"] + [f"- {d['slide']}: {d['texto']} — {d['motivo']}" for d in rel["slidesDescartados"]]
+    L += ["", "Critérios automáticos: fontes mínimas (título 72, texto 44, rótulo 36, contador 36), margem de segurança 72 px, contraste ≥ 4,5:1 medido, "
+          "logotipo de 160 px inteiro, rótulo \"Arte ilustrativa\", sem truncamento, área decorativa contígua ≤ 25 %.", ""]
+    return "\n".join(L)
 
 
 def _markdown(rel: dict) -> str:
