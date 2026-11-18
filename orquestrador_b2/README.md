@@ -12,7 +12,7 @@ python3 -m orquestrador_b2 FICHA.json --saida DIR_FORA_DO_REPO [--agora ISO] [--
 O v2 usa os layouts `ilustracao_capa`, `destaque_numerico`, `lista_caracteristicas` e `cta_seguir`, ilustração gráfica por categoria
 (`ilustracoes.py`, provedor `composicao-grafica`, registrada como pendente) e fundos sem logotipo embutido. Títulos e números são extraídos dos
 fatos liberados pela ponte; texto reprovado pela política de títulos/alegações é descartado e, com menos de 3 slides, o carrossel é bloqueado.
-CTA: "ACHADOS TODO DIA NO SEU CELULAR", sem links quando não fornecidos e sem citar legenda ou bio.
+Lista: título derivado dos fatos (ex.: `CONEXÃO E ESTOJO`), neutro se faltar informação. CTA: "CURTIU ESSE ACHADO? SIGA O PERFIL!", com menção secundária ao WhatsApp e ao Telegram, sem links quando não fornecidos e sem citar legenda ou bio.
 
 `--aprovar-fundo-ficticio` só vale para fixtures reconhecidas por **conteúdo** (hash) — a legada e as três de `exemplos_ficticios/` — e apenas em
 catálogo temporário; é aprovação de teste, sem valor de homologação humana.

@@ -262,6 +262,12 @@ def _fundo_b2r(foto) -> Image.Image:
     return r.cobrir(foto, W, H, (0.5, 0.5)).convert("RGBA")
 
 
+def _fundo_calmo(foto) -> Image.Image:
+    """Fundo com os elementos decorativos atenuados (azul-marinho a 50 %), para os slides de lista e de captação."""
+    base = _fundo_b2r(foto)
+    return Image.blend(base, Image.new("RGBA", base.size, idv.AZUL_ESCURO + (255,)), 0.5)
+
+
 def _bloco_titulo(t: _Tela, y: int, titulo: str, destaque: str | None, max_linhas: int = 2, alt_extra: int = 0, tam_max: int = 96):
     """Painel com título (≥72 px; palavras de ``destaque`` em amarelo). Devolve (caixa do painel, caixa do texto)."""
     tokens = [(p, idv.BRANCO) for p in (titulo or "").split()] + [(p, idv.AMARELO) for p in (destaque or "").split()]
@@ -384,17 +390,17 @@ def _destaque_numerico(foto, s, numero, total, tam_max):
 
 def _lista_caracteristicas(foto, s, numero, total, tam_max):
     """Lista de 2 a 3 características (``texto`` com um item por linha, separados por \n), marcadores visuais e título curto."""
-    t = _Tela(_fundo_b2r(foto), numero, total)
+    t = _Tela(_fundo_calmo(foto), numero, total)
     t.rotulo()
     itens = [i.strip() for i in (s.get("texto") or "").split("\n") if i.strip()]
     if not 2 <= len(itens) <= 3:
         raise ErroTextoNaoCabe("a lista exige de 2 a 3 características")
     y = M2 + 68 + 24
-    painel_t, caixa_t = _bloco_titulo(t, y, s.get("titulo"), s.get("destaque"), 2, tam_max=tam_max)
+    painel_t, caixa_t = _bloco_titulo(t, y, s.get("titulo"), s.get("destaque"), 2, tam_max=min(tam_max, 80))
     topo = painel_t[3] + 24
     disp = Y_FIM - topo
     larg_txt = LARG2 - 2 * 28 - 100
-    for tam in range(52, idv.FONTE_TEXTO_MIN - 1, -2):
+    for tam in range(76, idv.FONTE_TEXTO_MIN - 1, -2):    # fonte maior: melhor uso do espaço do cartão
         fnt = idv.fonte("texto", tam)
         try:
             blocos = [_linhas(i, fnt, larg_txt) for i in itens]
@@ -406,7 +412,7 @@ def _lista_caracteristicas(foto, s, numero, total, tam_max):
     else:
         raise ErroTextoNaoCabe("a lista não cabe com fonte mínima de %dpx" % idv.FONTE_TEXTO_MIN)
     extra = (disp - sum(alturas) - 20 * (len(itens) - 1)) // len(itens)
-    extra = max(0, min(extra, 200))
+    extra = max(0, min(extra, 150))
     yy = topo
     primeiro = topo
     for k, (b, h) in enumerate(zip(blocos, alturas)):
@@ -429,7 +435,7 @@ def _cta_seguir(foto, s, numero, total, tam_max):
     """Captação de seguidores: faixa da marca, título persuasivo, texto, botões gráficos WhatsApp e Telegram (sem links inventados).
 
     ``titulo``: chamada; ``texto``: corpo e complemento separados por \n; ``destaque``: linha opcional com os links já validados."""
-    t = _Tela(_fundo_b2r(foto), numero, total)
+    t = _Tela(_fundo_calmo(foto), numero, total)
     t.rotulo()
     y = M2 + 68 + 20
     if not s.get("destaque"):                                   # faixa da marca; com a linha de links o espaço é usado por eles
@@ -446,7 +452,7 @@ def _cta_seguir(foto, s, numero, total, tam_max):
         raise ErroTextoNaoCabe("texto da chamada vazio")
     corpo, complemento = partes[0], (partes[1] if len(partes) > 1 else "")
     y = painel_t[3] + 20
-    fc, lc, _ = _ajustar(corpo, "texto", 52, idv.FONTE_TEXTO_MIN, LARG2 - 64, 2)
+    fc, lc, _ = _ajustar(corpo, "texto", 56, idv.FONTE_TEXTO_MIN, LARG2 - 64, 2)
     h_corpo = len(lc) * _alt_linha(fc) + 44
     t.painel((M2, y, W - M2, y + h_corpo))
     t.linhas(M2 + 32, y + 22, lc, fc, idv.BRANCO, "texto")
@@ -456,13 +462,13 @@ def _cta_seguir(foto, s, numero, total, tam_max):
     topo_botoes = y
     for k, (nome, bg) in enumerate((("WhatsApp", idv.AMARELO), ("Telegram", idv.BRANCO))):
         x0 = M2 + k * (w_bt + 24)
-        caixa = (x0, y, x0 + w_bt, y + 124)
+        caixa = (x0, y, x0 + w_bt, y + 132)
         t.painel(caixa, fill=bg, raio=62)
         t.texto(((caixa[0] + caixa[2]) // 2, (caixa[1] + caixa[3]) // 2), nome, fbt, PAINEL, "botao", "mm", fundo=bg)
-    y += 124 + 20
+    y += 132 + 22
     resto = []
     if complemento:
-        resto.append((complemento, 52))
+        resto.append((complemento, 56))
     if s.get("destaque"):
         resto.append((s["destaque"], 52))
     caixa_fim = y

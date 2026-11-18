@@ -1,5 +1,6 @@
 """Estilo v2 (B2R): títulos derivados dos fatos, CTA neutro, fixtures por conteúdo, aprovação restrita, --estilo, entrega visual."""
 import contextlib
+import hashlib
 import io
 import json
 import re
@@ -46,11 +47,14 @@ class Textos(unittest.TestCase):
     def test_avaliar_texto_reprova_termos(self):
         for t in ("MELHOR PREÇO", "50% OFF", "ÚLTIMAS UNIDADES", "Comprovado", "Garantido", "Imperdível", "R$ 10", "Estoque limitado"):
             self.assertTrue(E.avaliar_texto(t), t)
-        self.assertEqual(E.avaliar_texto("ACHADOS TODO DIA NO SEU CELULAR"), [])
+        self.assertEqual(E.avaliar_texto("CURTIU ESSE ACHADO? SIGA O PERFIL!"), [])
 
     def test_cta_sem_links_neutro(self):
         t = E.cta_textos(None)
-        self.assertEqual(t["titulo"], "ACHADOS TODO DIA NO SEU CELULAR")
+        self.assertEqual(t["titulo"], "CURTIU ESSE ACHADO? SIGA O PERFIL!")
+        self.assertTrue(t["texto"].startswith("Descubra novos produtos e novidades no Suzuki Ofertas."))
+        self.assertIn("WhatsApp", t["texto"])
+        self.assertIn("Telegram", t["texto"])
         corpo = t["titulo"] + t["texto"]
         self.assertNotRegex(corpo, PROIBIDOS)
         self.assertNotIn("http", corpo)
@@ -60,6 +64,30 @@ class Textos(unittest.TestCase):
         t = E.cta_textos({"whatsapp": "https://wa.me/5511999999999", "telegram": "https://t.me/canal_ficticio"})
         self.assertIn("wa.me/5511999999999", t["destaque"])
         self.assertNotRegex(t["titulo"] + t["texto"] + t["destaque"], PROIBIDOS)
+
+
+class TitulosDaLista(unittest.TestCase):
+    def test_titulos_derivados_dos_fatos_das_fixtures(self):
+        casos = {"Conexão sem fio Bluetooth|Estojo de recarga incluso": "CONEXÃO E ESTOJO",
+                 "Corpo em alumínio|Tampa com trava de segurança": "MATERIAL E TAMPA",
+                 "Autonomia de até 4 h|Peso de 1,2 kg": "AUTONOMIA E PESO"}
+        for fatos, esperado in casos.items():
+            self.assertEqual(E.titulo_da_lista(fatos.split("|")), esperado)
+
+    def test_derivacao_generica_com_fatos_novos(self):
+        self.assertEqual(E.titulo_da_lista(["Display de 6 polegadas", "Memória de 128 GB"]), "DISPLAY E MEMÓRIA")
+        self.assertEqual(E.titulo_da_lista(["Cabo de 2 metros", "Corpo em plástico", "Tampa removível"]), "CABO, MATERIAL E TAMPA")
+
+    def test_sem_informacao_suficiente_usa_titulo_neutro(self):
+        self.assertEqual(E.titulo_da_lista(["de 5 litros", "com o"]), E.TITULO_NEUTRO)
+        self.assertEqual(E.titulo_da_lista(["Peso de 1 kg", "Peso de 2 kg"]), E.TITULO_NEUTRO)       # rótulos repetidos
+        self.assertEqual(E.titulo_da_lista(["Capacitância extraordinária", "Reconfiguração automática"]), E.TITULO_NEUTRO)  # > 24 caracteres
+        self.assertNotEqual(E.TITULO_NEUTRO, "NA PRÁTICA")
+
+    def test_titulo_nao_inventa_caracteristica(self):
+        fatos = ["Conexão sem fio Bluetooth", "Estojo de recarga incluso"]
+        for palavra in E.titulo_da_lista(fatos).replace(",", "").split():
+            self.assertTrue(palavra == "E" or palavra.lower() in " ".join(fatos).lower())
 
 
 class Fixtures(unittest.TestCase):
@@ -96,6 +124,17 @@ class Fixtures(unittest.TestCase):
             self.assertFalse(resolver_aprovacao("x", True, cat, None)[0])
             self.assertFalse(resolver_aprovacao("x", False, cat, fx)[0])
             self.assertFalse(resolver_aprovacao("x", True, Catalogo(RAIZ / "photos"), fx)[0])
+
+
+# Capas e destaques numéricos aprovados visualmente: preservados byte a byte no ajuste final (mesma versão de Pillow/libjpeg).
+CAPAS_E_DESTAQUES = {
+    "tecnologia_fone/slide_01.jpg": "a4fe14cd70297093c35ab9445efda0880745143c18b63bd7ceea919eca0497ae",
+    "tecnologia_fone/slide_02.jpg": "dc91df91ad76db3ab441e55d73e69016bba0a1a495fbcb025d6ec459889efa79",
+    "casa_cozinha_panela/slide_01.jpg": "bcafc364e9b4adaff7e5a99077dc56a52bdeeda65b1c364165c8dae1337216d9",
+    "casa_cozinha_panela/slide_02.jpg": "b9e9b03b575a631345dec173813b67fcbbd8dc8be569220abb59179be536a9cc",
+    "ferramentas_furadeira/slide_01.jpg": "16803f6b40917e349e94f03153bbba4182da38b068832c97f0cbc0594720f27b",
+    "ferramentas_furadeira/slide_02.jpg": "e67d72cbad9e5b47f2d199a05179cf1909c7446d9fbd9fb9b28013e058b93f52"
+}
 
 
 class Fluxo(unittest.TestCase):
@@ -162,6 +201,19 @@ class Fluxo(unittest.TestCase):
                 self.assertEqual(lay[-1], "cta_seguir")
                 fotos = [s["foto"] for s in sl]
                 self.assertTrue(all(fotos.count(f) <= 2 for f in fotos))
+
+    def test_capas_e_destaques_preservados(self):
+        for rel, h in CAPAS_E_DESTAQUES.items():
+            self.assertEqual(hashlib.sha256((self.saida / rel.split("/")[0] / "slides" / rel.split("/")[1]).read_bytes()).hexdigest(), h, rel)
+
+    def test_lista_e_cta_da_entrega(self):
+        for pasta in self.saida.iterdir():
+            if pasta.is_dir():
+                rel = json.loads((pasta / "relatorio_b2.json").read_text(encoding="utf-8"))
+                sl = {s["layout"]: s for s in rel["carrossel"]["slides"]}
+                self.assertNotEqual(sl["lista_caracteristicas"]["titulo"], "NA PRÁTICA")
+                self.assertEqual(sl["cta_seguir"]["titulo"], "CURTIU ESSE ACHADO? SIGA O PERFIL!")
+                self.assertNotRegex(json.dumps(sl["cta_seguir"], ensure_ascii=False), re.compile(r"bio|legenda|http", re.I))
 
     def test_catalogo_do_repositorio_intacto(self):
         self.assertEqual(CATALOGO_REPO.read_bytes(), self.antes)

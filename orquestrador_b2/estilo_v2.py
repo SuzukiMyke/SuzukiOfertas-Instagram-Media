@@ -23,11 +23,11 @@ from . import ilustracoes
 ESTILOS = ("auto", "v1", "v2")
 MIN_SLIDES, MAX_SLIDES = 3, 5
 TITULO_MAX = 22
-TITULO_NEUTRO = "NA PRÁTICA"
-TITULO_CTA = "ACHADOS TODO DIA NO SEU CELULAR"
-CORPO_CTA_COM_LINKS = "Siga o Suzuki Ofertas no WhatsApp e no Telegram."
-CORPO_CTA_NEUTRO = "Acompanhe o Suzuki Ofertas no WhatsApp e no Telegram."            # sem links validados fornecidos
-COMPLEMENTO_CTA = "Ative as notificações e compartilhe com quem gosta de ofertas."
+TITULO_NEUTRO = "PRINCIPAIS DETALHES"
+TITULO_LISTA_MAX = 24
+TITULO_CTA = "CURTIU ESSE ACHADO? SIGA O PERFIL!"
+CORPO_CTA = "Descubra novos produtos e novidades no Suzuki Ofertas."                  # prioridade: crescimento do perfil no Instagram
+COMPLEMENTO_CTA = "Também estamos no WhatsApp e no Telegram."                           # menção secundária; não presume link na bio nem na legenda
 FOCO = [0.5, 0.45]
 # Fixtures fictícias aprovadas para a aprovação de TESTE do fundo (identificadas pelo hash do conteúdo CANÔNICO: JSON ordenado, sem espaços).
 FIXTURES_B2R = {
@@ -88,6 +88,35 @@ def titulo_do_fato(fato: str) -> str:
     return cand if cand and len(cand) <= TITULO_MAX and cand.isalpha() else TITULO_NEUTRO
 
 
+_MATERIAIS = {"aluminio", "aco", "inox", "plastico", "madeira", "vidro", "ceramica", "ferro", "borracha", "silicone", "couro", "tecido", "algodao",
+              "bambu", "metal", "porcelana", "nylon", "poliester"}
+
+
+def rotulo_do_fato(fato: str) -> str:
+    """Rótulo de UMA palavra do fato: ``MATERIAL`` quando ele cita um material (regra genérica de vocabulário, sem tabela por produto) ou a
+    primeira palavra útil do próprio fato; ``TITULO_NEUTRO`` quando não há palavra útil."""
+    if not extrair_destaque(fato) and any(_sem_acento(p.strip(".,;:")) in _MATERIAIS for p in _palavras_uteis(fato)):
+        return "MATERIAL"
+    return titulo_do_fato(fato)
+
+
+def titulo_da_lista(fatos: list[str]) -> str:
+    """Título informativo da lista, derivado dos rótulos dos fatos (ex.: ``CONEXÃO E ESTOJO``). Rótulos repetidos ou neutros são ignorados;
+    se restarem menos de 2 ou o título não couber (≤ 24 caracteres) ou for reprovado pela avaliação de texto, usa o título neutro."""
+    rotulos = []
+    for f in fatos:
+        r = rotulo_do_fato(f)
+        if r != TITULO_NEUTRO and r not in rotulos:
+            rotulos.append(r)
+    for n in (len(rotulos), 2):                                      # com 3 rótulos longos, tenta os dois primeiros
+        if n >= 2 and len(rotulos) >= n:
+            usados = rotulos[:n]
+            titulo = " E ".join(usados) if n == 2 else ", ".join(usados[:-1]) + " E " + usados[-1]
+            if len(titulo) <= TITULO_LISTA_MAX and not avaliar_texto(titulo):
+                return titulo
+    return TITULO_NEUTRO
+
+
 def avaliar_texto(texto: str) -> list[str]:
     """Motivos de reprovação do texto (lista vazia = aceito): risco ALTA, alegação comercial da curadoria ou termo proibido do fluxo."""
     motivos = []
@@ -109,7 +138,7 @@ def cta_textos(links: dict | None) -> dict:
     """Textos do CTA de captação. Com links VALIDADOS pela ponte, mostra-os; sem links, usa o texto neutro e não cita legenda, bio ou link."""
     links = {k: v for k, v in (links or {}).items() if v}
     destaque = " · ".join(f"{'WhatsApp' if k == 'whatsapp' else 'Telegram'}: {_link_curto(v)}" for k, v in sorted(links.items(), reverse=True))
-    return {"titulo": TITULO_CTA, "texto": f"{CORPO_CTA_COM_LINKS if links else CORPO_CTA_NEUTRO}\n{COMPLEMENTO_CTA}",
+    return {"titulo": TITULO_CTA, "texto": f"{CORPO_CTA}\n{COMPLEMENTO_CTA}",
             **({"destaque": destaque} if destaque else {})}
 
 
@@ -161,7 +190,7 @@ def montar_slides(ficha: dict, ponte_config: dict, ids: dict, links: dict | None
         else:
             adicionar("destaque_numerico", next(fundos), titulo=titulo, destaque=numero, texto=f0)
     if 2 <= len(corpo) <= 3:
-        adicionar("lista_caracteristicas", next(fundos), titulo=TITULO_NEUTRO, texto="\n".join(corpo))
+        adicionar("lista_caracteristicas", next(fundos), titulo=titulo_da_lista(corpo), texto="\n".join(corpo))
     adicionar("cta_seguir", next(fundos), **cta_textos(links))
     for s in m.slides:                                              # termos proibidos em TODO texto de slide (fatos e CTA incluídos)
         for campo in ("titulo", "destaque", "texto"):
