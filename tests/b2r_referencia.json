@@ -1,0 +1,342 @@
+{
+  "b2": {
+    "carrossel": {
+      "id": "curadoria-c001-3f89e8be",
+      "permitir_fotos_pendentes": false,
+      "slides": [
+        {
+          "destaque": "FICTÍCIA 5 LITROS",
+          "foco": [
+            0.5,
+            0.45
+          ],
+          "foto": "cg-0001",
+          "layout": "foto_topo",
+          "texto": "Loja Fictícia · Arte ilustrativa",
+          "titulo": "PANELA DE PRESSÃO"
+        },
+        {
+          "destaque": "COMPROVADA",
+          "foco": [
+            0.5,
+            0.45
+          ],
+          "foto": "cg-0001",
+          "layout": "cartao",
+          "reutilizar": true,
+          "texto": "Capacidade de 5 litros",
+          "titulo": "CARACTERÍSTICA"
+        },
+        {
+          "destaque": "COMPROVADA",
+          "foco": [
+            0.5,
+            0.45
+          ],
+          "foto": "cg-0001",
+          "layout": "cartao",
+          "reutilizar": true,
+          "texto": "Corpo em alumínio",
+          "titulo": "CARACTERÍSTICA"
+        },
+        {
+          "destaque": "WHATSAPP E TELEGRAM",
+          "foco": [
+            0.5,
+            0.45
+          ],
+          "foto": "cg-0001",
+          "layout": "foto_topo",
+          "reutilizar": true,
+          "texto": "Conheça os canais do Suzuki Ofertas no WhatsApp e no Telegram.",
+          "titulo": "CHAME NO"
+        }
+      ]
+    },
+    "folha": "2f6b84d48dd3f70d1d5b50fcfa8e02de2bb104a3e399bf945aefd34bdfdf79c0",
+    "fundo": "13feaf103c4f391f49bdddfa642bee49e252494961e3ca3724ae9e30d1c016c4",
+    "slides": [
+      [
+        "slide_01.jpg",
+        "a858ddf06c554f519d7e3dfaa80a694cc0f43feaad06875fe9f97a5240ce163c",
+        "8f34204522543287353ed68f7e4055c491dc34638f56321c9372fb473944c318"
+      ],
+      [
+        "slide_02.jpg",
+        "76901aae389666798449d7e23b3348fb6dae005d99c76862a0c87751911da6da",
+        "137ec4934a5fe0d3b0652729398cb5cfe970b56d226806c9ed9987c7234512b2"
+      ],
+      [
+        "slide_03.jpg",
+        "b52aedeea45f8702b6d13594ac48025c0c6cf6c453de62a1897fc81e8c584cb2",
+        "ac0b621859140a701d3a85e71402ae5f2e6f001cbcc45d36053e488be9b4dbce"
+      ],
+      [
+        "slide_04.jpg",
+        "dacfe882592fca20160bd83ec25d45f6b850c298b445245617f0864ffa2cdbae",
+        "517824f299148936db7eea0a00b3beba8b69618447875ea733410e4183cf820d"
+      ]
+    ],
+    "status": "concluido"
+  },
+  "commitBase": "ef256724578d87b7aa60b457b991f447dd671963",
+  "fundos": {
+    "0": "13feaf103c4f391f49bdddfa642bee49e252494961e3ca3724ae9e30d1c016c4",
+    "1": "ab8c96af937557e74c7b974857985dcd8ad20ab3f7c5c82a85d87ac8d4386c69",
+    "10": "8e768de312b95425a2165eb3e074cb40211e42634803c3dcd03e7cf7e5a17558",
+    "11": "ff0e32169f10fab97b18335dea3c6795b886cba1908a5dc8c952df206a052030",
+    "2": "532819e969609b939e384c04e389d556169a95485ecc1f94d1da603abc270f00",
+    "3": "21a773efc7c6818842489bc302b108487a199d1ddcb4a91a14ef458f8e10fbf9",
+    "4": "dd150320b9381936fd6d85daf34c27688900bfd371feb73d2220af0393743e26",
+    "5": "13230891b325174acb80ac800d7fa49016fc5bda0f16e0447a764a8dc206e9e6",
+    "6": "83f764c560e7df80b7422c66ec5c1ba747eace0d0d891cd312fb75afe654f58a",
+    "7": "edd2a4211488c081b0b25b6c99372d96976d2a7f89578520f119d7f647496da9",
+    "8": "640d133cc9eebe92f5ffceb91080f18013c56907700690e045978375bcef5cc7",
+    "9": "61a119145728a78205125a61a2f6307acae26d635f9c90cc756eebcc219ba294"
+  },
+  "layouts": {
+    "cartao/curto": {
+      "areas": {
+        "foto_livre": [
+          72,
+          247,
+          1008,
+          1077
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          84,
+          560,
+          211
+        ],
+        "texto_inferior": [
+          72,
+          1077,
+          1008,
+          1162
+        ],
+        "texto_total": [
+          72,
+          84,
+          1008,
+          1162
+        ]
+      },
+      "pixels": "62079d80270fc1df10fde47ea45d56504b169f1d1830b03946c7b13208bf4bee"
+    },
+    "cartao/longo": {
+      "areas": {
+        "foto_livre": [
+          72,
+          340,
+          1008,
+          1077
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          84,
+          783,
+          304
+        ],
+        "texto_inferior": [
+          72,
+          1077,
+          1008,
+          1162
+        ],
+        "texto_total": [
+          72,
+          84,
+          1008,
+          1162
+        ]
+      },
+      "pixels": "a58389f0b7c590966f44398d882dc6fad85a26270665bc3afa0abc01ff27cee4"
+    },
+    "cartao/medio": {
+      "areas": {
+        "foto_livre": [
+          72,
+          340,
+          1008,
+          1077
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          84,
+          911,
+          304
+        ],
+        "texto_inferior": [
+          72,
+          1077,
+          1008,
+          1162
+        ],
+        "texto_total": [
+          72,
+          84,
+          1008,
+          1162
+        ]
+      },
+      "pixels": "13113e17701e930c1f825eaa035cc8e0d3bf4dc0b7c7c2ebb2dfc8025cacff2f"
+    },
+    "foto_cheia/curto": {
+      "areas": {
+        "foto_livre": [
+          0,
+          0,
+          1080,
+          556
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          936,
+          657,
+          1162
+        ]
+      },
+      "pixels": "cb6698eb22110e4dd5f7e2a9140ecc5360b919a58ff54c94dda8b7b6d2faee5e"
+    },
+    "foto_cheia/longo": {
+      "areas": {
+        "foto_livre": [
+          0,
+          0,
+          1080,
+          445
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          825,
+          941,
+          1162
+        ]
+      },
+      "pixels": "44dabdd955cf0ccfc6f730057923af3a022b9dca3c619306e8025caca8974d1d"
+    },
+    "foto_cheia/medio": {
+      "areas": {
+        "foto_livre": [
+          0,
+          0,
+          1080,
+          334
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          714,
+          961,
+          1162
+        ]
+      },
+      "pixels": "07cec015606b3468ba0de90421fec6ca70a3404bdbb6469e0e1ef71465221f08"
+    },
+    "foto_topo/curto": {
+      "areas": {
+        "foto_livre": [
+          0,
+          0,
+          1080,
+          560
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          815,
+          657,
+          1041
+        ]
+      },
+      "pixels": "8218da68e7caab736a87f167f993240a04fbfa29326325448d40fa19317b80ec"
+    },
+    "foto_topo/longo": {
+      "areas": {
+        "foto_livre": [
+          0,
+          0,
+          1080,
+          560
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          815,
+          941,
+          1152
+        ]
+      },
+      "pixels": "f50e7c8e4478929b59356810374808df48a25f48d28cf86ebd3ab611b4e4e7de"
+    },
+    "foto_topo/medio": {
+      "areas": {
+        "foto_livre": [
+          0,
+          0,
+          1080,
+          560
+        ],
+        "logo": [
+          898,
+          1186,
+          1018,
+          1306
+        ],
+        "texto": [
+          72,
+          815,
+          995,
+          1136
+        ]
+      },
+      "pixels": "458a0c0689060588d958e8fb0c83181501a831aa911916643b4cfccb4e0b7059"
+    }
+  }
+}

@@ -91,9 +91,19 @@ def _textura(variante: int) -> Image.Image:
     return camada
 
 
-def gerar_fundo(variante: int = 0) -> Image.Image:
-    """Imagem RGB 1080×1350, determinística para a ``variante`` (0 a ``VARIANTES - 1``)."""
+def _validar_marca(marca) -> bool:
+    if not isinstance(marca, bool):
+        raise ValueError("marca deve ser True ou False")
+    return marca
+
+
+def gerar_fundo(variante: int = 0, *, marca: bool = True) -> Image.Image:
+    """Imagem RGB 1080×1350, determinística para a ``variante`` (0 a ``VARIANTES - 1``).
+
+    ``marca=True`` (padrão): comportamento de sempre (logotipo discreto embutido; bytes idênticos aos anteriores).
+    ``marca=False``: o mesmo fundo SEM o logotipo (o estilo B2R aplica o logotipo inteiro no rodapé)."""
     variante = _validar_variante(variante)
+    marca = _validar_marca(marca)
     base = _gradiente(variante).convert("RGBA")
     formas = _formas(variante)
     base.alpha_composite(_textura(variante))
@@ -102,29 +112,31 @@ def gerar_fundo(variante: int = 0) -> Image.Image:
     cx, cy = (W * (1 + variante % 3) // 4), (H * (1 + (variante // 3) % 3) // 4)
     ImageDraw.Draw(brilho).ellipse((cx - 420, cy - 420, cx + 420, cy + 420), fill=idv.AZUL_VIBRANTE + (90,))
     base.alpha_composite(brilho.filter(ImageFilter.GaussianBlur(140)))
-    marca = idv.logo_marca_dagua(420, 0.12)                                     # logotipo oficial, só em memória, discreto
-    base.alpha_composite(marca, ((W - marca.width) // 2, H - marca.height - 150))
+    if marca:
+        logo = idv.logo_marca_dagua(420, 0.12)                                  # logotipo oficial, só em memória, discreto
+        base.alpha_composite(logo, ((W - logo.width) // 2, H - logo.height - 150))
     return base.convert("RGB")
 
 
-def fundo_bytes(variante: int = 0) -> bytes:
-    """JPEG (qualidade 95, sem otimização/progressivo, sem EXIF): mesmos bytes para a mesma variante."""
+def fundo_bytes(variante: int = 0, *, marca: bool = True) -> bytes:
+    """JPEG (qualidade 95, sem otimização/progressivo, sem EXIF): mesmos bytes para a mesma variante e o mesmo ``marca``."""
     buf = io.BytesIO()
-    gerar_fundo(variante).save(buf, "JPEG", quality=QUALIDADE_JPEG, subsampling=0, optimize=False, progressive=False)
+    gerar_fundo(variante, marca=marca).save(buf, "JPEG", quality=QUALIDADE_JPEG, subsampling=0, optimize=False, progressive=False)
     return buf.getvalue()
 
 
-def sha256_fundo(variante: int = 0) -> str:
-    return hashlib.sha256(fundo_bytes(variante)).hexdigest()
+def sha256_fundo(variante: int = 0, *, marca: bool = True) -> str:
+    return hashlib.sha256(fundo_bytes(variante, marca=marca)).hexdigest()
 
 
-def registrar(catalogo: Catalogo, variante: int = 0, descricao: str | None = None, agora: str | None = None) -> tuple[str, bool]:
+def registrar(catalogo: Catalogo, variante: int = 0, descricao: str | None = None, agora: str | None = None,
+              *, marca: bool = True) -> tuple[str, bool]:
     """Grava o fundo em ``<raiz do catálogo>/photos/cg-NNNN.jpg`` e o registra PENDENTE. Devolve ``(id, nova)``.
 
     O catálogo é obrigatório (não há padrão): nunca toca o catálogo do repositório sem que o chamador o passe. Mesmo conteúdo (SHA-256)
     não é registrado duas vezes."""
     variante = _validar_variante(variante)
-    dados = fundo_bytes(variante)
+    dados = fundo_bytes(variante, marca=marca)
     sha = hashlib.sha256(dados).hexdigest()
     existente = catalogo.por_hash(sha)
     if existente:
@@ -135,11 +147,12 @@ def registrar(catalogo: Catalogo, variante: int = 0, descricao: str | None = Non
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_bytes(dados)
     catalogo.adicionar(foto_id, {
-        "id": foto_id, "provedor": PROVEDOR, "nome_arquivo_original": f"fundo_marca_v{variante:02d}.jpg",
+        "id": foto_id, "provedor": PROVEDOR, "nome_arquivo_original": f"fundo_marca_v{variante:02d}{'' if marca else '_sem_logo'}.jpg",
         "sha256_original": sha, "sha256": sha, "largura": W, "altura": H, "formato_original": "JPEG",
         "data": agora or agora_utc(), "tipo_data": "geracao", "origem": ORIGEM_COMPOSICAO_GRAFICA,
-        "descricao": descricao or f"Fundo de marca gerado por código (variante {variante})", "prompt": None,
-        "gerador": {"modulo": "gerador.fundo_marca", "versao": VERSAO, "variante": variante},
+        "descricao": descricao or f"Fundo de marca gerado por código (variante {variante}{'' if marca else ', sem logotipo'})",
+        "prompt": None,
+        "gerador": {"modulo": "gerador.fundo_marca", "versao": VERSAO, "variante": variante, **({} if marca else {"marca": False})},
         "restricoes_uso": list(RESTRICOES), "caminho_github": rel, "caminho_original": rel,
     })                                                                           # sem 'aprovacao': Catalogo.adicionar o cria PENDENTE
     catalogo.salvar()

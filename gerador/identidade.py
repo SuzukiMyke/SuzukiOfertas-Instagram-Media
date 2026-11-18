@@ -50,3 +50,15 @@ def logo_marca_dagua(lado: int = LOGO_LADO, opacidade: float = 0.92) -> Image.Im
     mascara = mascara.filter(ImageFilter.GaussianBlur(logo.width * 0.03))
     logo.putalpha(mascara.point(lambda v: round(v * opacidade)))
     return logo.resize((lado, round(lado * logo.height / logo.width)), Image.LANCZOS)
+
+
+# --- Constantes da B2R (refinamento visual). Só acréscimos: nenhuma constante anterior foi alterada. ---
+MARGEM_SEGURANCA = 72            # nenhum texto ou logotipo (estilo B2R) fora desta margem
+LOGO_GRANDE = 160                # logotipo inteiro do rodapé "grande"
+CONTADOR_GRANDE = 40             # contador de páginas do rodapé "grande" (mínimo exigido: 38)
+FONTE_TITULO_MIN = 72
+FONTE_TEXTO_MIN = 44
+FONTE_ROTULO_MIN = 36
+FONTE_CONTADOR_MIN = 36
+CONTRASTE_MIN = 4.5              # razão de contraste mínima (WCAG AA, texto normal)
+ROTULO_ARTE = "Arte ilustrativa"

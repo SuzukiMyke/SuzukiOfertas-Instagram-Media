@@ -114,8 +114,20 @@ def desenhar_bloco(base: Image.Image, x: int, y: int, m: dict) -> tuple[int, int
     return (x, y, round(x + larg_max), yy)
 
 
-def rodape(base: Image.Image, numero: int | None, total: int | None) -> tuple[int, int, int, int]:
-    """Logo discreto no canto inferior direito + indicador de página. Retorna a caixa do logo."""
+def rodape(base: Image.Image, numero: int | None, total: int | None, *, grande: bool = False) -> tuple[int, int, int, int]:
+    """Logo discreto no canto inferior direito + indicador de página. Retorna a caixa do logo.
+
+    ``grande=False`` (padrão): comportamento de sempre. ``grande=True`` (estilo B2R): logotipo de 160 px INTEIRO, dentro da margem
+    de segurança de 72 px, e contador de páginas de 40 px."""
+    if grande:
+        lado, m = idv.LOGO_GRANDE, idv.MARGEM_SEGURANCA
+        logo = idv.logo_marca_dagua(lado, 1.0)
+        lx, ly = idv.W - m - logo.width, idv.H - m - logo.height
+        base.alpha_composite(logo, (lx, ly))
+        if numero and total and total > 1:
+            f = idv.fonte("rotulo", idv.CONTADOR_GRANDE)
+            ImageDraw.Draw(base).text((m, ly + logo.height // 2), f"{numero}/{total}", font=f, fill=(255, 255, 255, 235), anchor="lm")
+        return (lx, ly, lx + logo.width, ly + logo.height)
     logo = idv.logo_marca_dagua()
     lx = idv.W - idv.MARGEM - logo.width + 10
     ly = idv.H - 44 - logo.height
