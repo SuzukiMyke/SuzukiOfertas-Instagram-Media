@@ -19,7 +19,9 @@ PROVEDORES = {
     "cloudflare-flux": "flux",
     "nano-banana": "nb",
     "foto-real": "real",
+    "composicao-grafica": "cg",          # fundos de marca gerados por código (gerador/fundo_marca.py); entram PENDENTES
 }
+ORIGEM_COMPOSICAO_GRAFICA = "composicao-grafica"
 STATUS_VALIDOS = ("pendente", "aprovada", "rejeitada")
 
 
