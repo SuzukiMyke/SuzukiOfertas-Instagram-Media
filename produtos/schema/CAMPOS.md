@@ -63,7 +63,7 @@ Só existe com `validar_produto(..., contrato="1.1")`; o modo 1.0 continua recus
 | Campo | Curadoria manual (`curadoria_manual`), somente em `B/` |
 |---|---|
 | `source.kind` / `source.system` | `curadoria_manual` / `SuzukiOfertas-Instagram-Curadoria` |
-| `product.provider` | `CURADORIA` (reservado: recusado nas demais fontes) |
+| `product.provider` | `CURADORIA` (no contrato 1.1 é reservado: recusado nas demais fontes; no 1.0 nada mudou) |
 | `product.affiliateUrl` | `null` |
 | `price` | `{"amountCents": null, "currency": "BRL", "originalAmountCents": null, "verifiedAt": null, "validUntil": null, "verification": "desconhecida"}`; preço não nulo, se vier, segue as regras de B |
 | `availability` | `unknown` |

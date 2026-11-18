@@ -168,7 +168,7 @@ O contrato do gerador não foi alterado; a compatibilidade é provada nos testes
 ### Etapa 5.14-B1 (commit 1) — curadoria manual no contrato 1.1
 
 Nova fonte do tipo B, **só no contrato 1.1** (`validar_produto(..., contrato="1.1")`, usado apenas por `leitor_v11`; o padrão `"1.0"` não mudou): `source.kind = curadoria_manual`,
-`source.system = SuzukiOfertas-Instagram-Curadoria` e `product.provider = CURADORIA` (os três obrigatórios juntos; o provedor `CURADORIA` é reservado e recusado para qualquer fonte do agente). Entra só em `B/`.
+`source.system = SuzukiOfertas-Instagram-Curadoria` e `product.provider = CURADORIA` (os três obrigatórios juntos; no contrato 1.1 o provedor `CURADORIA` é reservado e recusado para qualquer fonte do agente; o contrato 1.0 não mudou e continua aceitando esse nome em A/B). Entra só em `B/`.
 **Preço nulo** (`amountCents: null`, moeda BRL, `originalAmountCents`/`verifiedAt`/`validUntil` nulos, `verification: desconhecida`) é aceito exclusivamente na curadoria, que exige `availability = unknown`, `affiliateUrl` nulo,
 `publication.state = nao_publicada`, `agentPublicationEligible = false` e `blockReason = curadoria_manual_sem_verificacao_comercial` (valor exato; o detector de "sequência opaca" o recusaria, então é comparado literalmente).
 `sourceRef` de cada fato = URL HTTPS (sem rede; encurtadores e origens de procedência não verificável são recusados por **nome do host**, em `curadoria_regras_v11.py`); URL válida **não** prova veracidade.

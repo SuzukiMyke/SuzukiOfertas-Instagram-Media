@@ -87,9 +87,10 @@ class FonteTest(BaseV11):
     def test_tipos_do_agente_exigem_sistema_do_agente_e_nao_usam_o_provider_reservado(self):
         for obj in (produto_b(4, "B001", source__system=SISTEMA_CURADORIA), produto_a(1, "A001", source__system=SISTEMA_CURADORIA)):
             self.assertFalse(v11(obj).ok)
+        # reserva só no contrato 1.1; o contrato 1.0 continua aceitando (ver test_v11_separacao_contratos)
         for obj in (produto_b(4, "B001", product__provider="CURADORIA"), produto_a(1, "A001", product__provider="CURADORIA")):
-            for contrato in ("1.0", "1.1"):
-                self.assertIn("reservado", erros(obj, contrato))
+            self.assertIn("reservado", erros(obj, "1.1"))
+            self.assertTrue(validar_produto(obj, AGORA, contrato="1.0").ok)
 
     def test_curadoria_nunca_entra_em_a(self):
         gravar_lote(self.exp / "A", {"c.json": curadoria(), "a.json": produto_a(1, "A001")})

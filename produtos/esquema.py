@@ -344,10 +344,10 @@ def validar_produto(obj, agora: datetime, *, tolerancia_futuro_min: int = 5, con
         if "provider" in prod and not (isinstance(prov, str) and _PROVIDER.match(prov)):
             ctx.erro("product.provider", "provedor inválido (use MAIÚSCULAS, dígitos e '_')")
             prov = None
-        if isinstance(prov, str):                      # reserva exclusiva (vale também no contrato 1.0)
+        if isinstance(prov, str):                      # reserva do provedor: SÓ no contrato 1.1 (o 1.0 aceitava e continua aceitando)
             if eh_cur and prov != PROVIDER_CURADORIA:
                 ctx.erro("product.provider", "curadoria manual exige o provedor reservado da curadoria")
-            elif not eh_cur and prov == PROVIDER_CURADORIA:
+            elif v11 and not eh_cur and prov == PROVIDER_CURADORIA:
                 ctx.erro("product.provider", "provedor reservado exclusivamente à curadoria manual")
         dados_prod = {
             "id": pid, "provider": prov,
