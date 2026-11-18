@@ -144,3 +144,14 @@ novo divergente. Ficam fora: `exportId`, `exportedAt`, `verifiedAt`, `validUntil
 `fonte_mudou`, `fatos_mudaram`, `fonte_comprovacao_mudou`, `preco_mudou`, `disponibilidade_mudou`, `divergencia_ab_alterada` (com `codigos` e
 `campos`). `decisoes.json` não muda; a impressão é recalculada na leitura (versão revisada ausente → `versao_desconhecida`, conservador e registrado).
 Aprovação editorial **não** é validade comercial: a janela de 24 h e o portão de pré-publicação seguem valendo.
+
+### Etapa 5.14-A (commit 2) — ponte ficha 1.1 → carrossel
+
+`carrossel_fragmento_v11.ficha_para_carrossel_v11(ficha, *, t_publicacao, foto_catalogo_id, recurso_visual, catalogo, links_oficiais, alegacoes,
+preco_aprovado_centavos, ...)`: função pura (sem rede, sem relógio, sem gravação) que devolve o JSON no formato de `exemplos/carrossel_exemplo.json`
+(`id`, `permitir_fotos_pendentes`, `slides[]` com `layout`, `foto`, `foco`, `titulo`, `destaque`, `texto`) mais `bloqueios`, `avisos` e `alegacoes_omitidas`.
+O resultado é sempre rascunho (`aprovado_para_publicacao` nunca é definido). Fonte B: só editorial, sem preço/desconto/estoque/urgência. Fonte A: alegações
+comerciais só se o portão (`prepublicacao`) permitir para `t_publicacao`; essencial inválida bloqueia, acessória inválida é omitida e registrada. Título ALTA bloqueia;
+MÉDIA exige revisão. Foto real só com permissão humana + hash do catálogo igual a `fotoSha256`; imagens ilustrativas são rotuladas. Último slide: CTA WhatsApp/Telegram
+(links só se fornecidos e oficiais) e identificação de afiliado quando aplicável. Emite só `foto_topo` e `cartao` (o validador do gerador reprova combinações de texto em `foto_cheia`).
+O contrato do gerador não foi alterado; a compatibilidade é provada nos testes carregando e **renderizando** o JSON (1080×1350) com o próprio gerador, em pasta temporária.
