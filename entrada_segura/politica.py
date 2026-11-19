@@ -6,6 +6,7 @@ será reavaliado antes do primeiro dado real.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Callable
@@ -18,6 +19,20 @@ MIB = 1024 * 1024
 
 def relogio_utc() -> datetime:
     return datetime.now(timezone.utc)
+
+
+_UTC = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+
+
+def parse_utc(texto) -> datetime:
+    """``AAAA-MM-DDTHH:MM:SSZ`` estrito (UTC). Levanta ``ValueError`` para qualquer outra forma."""
+    if not isinstance(texto, str) or not _UTC.match(texto):
+        raise ValueError("data fora do formato AAAA-MM-DDTHH:MM:SSZ")
+    return datetime.strptime(texto, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+
+
+def formatar_utc(dt: datetime) -> str:
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 @dataclass(frozen=True)
